@@ -71,4 +71,4 @@ If any code samples or other technology this work contains, describes, and / or 
 
 # LICENSE
 Please see [LICENSE](https://github.com/programming-digital-twins/pdt-unity-components/blob/alpha/LICENSE) if you plan to use these assets.
-Please see [LICENSE](https://github.com/programming-digital-twins/pdt-unity-components/blob/alpha/LICENSE-CODE) if you plan to use this code.
+Please see [LICENSE-CODE](https://github.com/programming-digital-twins/pdt-unity-components/blob/alpha/LICENSE-CODE) if you plan to use this code.
