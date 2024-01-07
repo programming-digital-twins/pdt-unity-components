@@ -53,20 +53,18 @@ Much of this repository, and in particular unit and integration tests, will cont
 # REFERENCES
 This repository has external dependencies on other open source projects. I'm grateful to the open source community and authors / maintainers of the following libraries:
 
-Core exercises:
-
-- [Title1](http://example.com)
-  - Reference Option A: Author Name(s). Full Title. Company, Year(s). http://example.com.
-  - Reference Option B: Author Name(s). Full Title. (year) [Online]. Available: http://example.com.
-- [Title2](http://example.com)
-  - Reference Option A: Author Name(s). Full Title. Company, Year(s). http://example.com.
-  - Reference Option B: Author Name(s). Full Title. (year) [Online]. Available: http://example.com.
-- [Title3](http://example.com)
-  - Reference Option A: Author Name(s). Full Title. Company, Year(s). http://example.com.
-  - Reference Option B: Author Name(s). Full Title. (year) [Online]. Available: http://example.com.
-- [Title4](http://example.com)
-  - Reference Option A: Author Name(s). Full Title. Company, Year(s). http://example.com.
-  - Reference Option B: Author Name(s). Full Title. (year) [Online]. Available: http://example.com.
+- [pdt-cfw-components](https://github.com/programming-digital-twins/pdt-cfw-components)
+  - Reference: Andrew D. King. Programming Digital Twins Client Framework Components. (2024) [Online]. Available: https://github.com/programming-digital-twins/pdt-cfw-components.
+- [DTDLParser](https://github.com/digitaltwinconsortium/DTDLParser)
+  - Reference: Digital Twin Consortium and contributors. (2024) [Online]. Available: https://github.com/digitaltwinconsortium/DTDLParser.
+- [InfluxDB.Client](https://github.com/influxdata/influxdb-client-csharp)
+  - Reference: InfluxData, Inc. Influx DB C# Client. (2024) [Online]. Available: https://github.com/influxdata/influxdb-client-csharp.
+- [MQTTnet](https://github.com/dotnet/MQTTnet)
+  - Reference: .NET Foundation and contributors. MQTTnet .NET library for MQTT communications. (2024) [Online]. Available: https://github.com/dotnet/MQTTnet.
+- [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json)
+  - Reference: James Newton-King. Json.NET JSON framework for .NET. (2024) [Online]. Available: https://github.com/JamesNK/Newtonsoft.Json.
+- [NUnit](https://nunit.org/)
+  - Reference: Charlie Poole, Rob Prouse. Nunit unit testing framework for .NET languages. (2024) [Online]. Available: https://github.com/nunit.
 
 NOTE: This list will be updated as others are incorporated.
 
