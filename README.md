@@ -19,26 +19,19 @@ These components are all written in C# and are partially based on, although diff
 
 ## How to navigate the directory structure for this repository
 This repository is comprised of the following key paths:
-- [Top Level Dir](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets): Contains the top level Assets folder along with development environment configuration files for convenience.
-- [Assets](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets): Contains the top level Assets folder, which houses all other component directories.
-  - [Lib](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets/LabBenchStudios/ProgrammingDigitalTwins/Lib): Placeholder path for core library dependencies.
-  - [Lib_Common](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets/LabBenchStudios/ProgrammingDigitalTwins/Lib_Common): Placeholder path for common library dependencies.
-- [Assets/LabBenchStudios/ProgrammingDigitalTwins](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets/LabBenchStudios/ProgrammingDigitalTwins): All other assets are contained within this path.
-  - [Materials](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets/LabBenchStudios/ProgrammingDigitalTwins/Materials): Contains some initial materials.
-  - [Prefabs](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets/LabBenchStudios/ProgrammingDigitalTwins/Prefabs): Contains some initial prefabs.
-  - [Scripts/Unity](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets/LabBenchStudios/ProgrammingDigitalTwins/Scripts/Unity): Contains all Unity-specific C# scripts.
-    - [Common](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets/LabBenchStudios/ProgrammingDigitalTwins/Scripts/Unity/Common): Contains shared C# scripts.
-    - [Controller](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets/LabBenchStudios/ProgrammingDigitalTwins/Scripts/Unity/Controller): Contains controller-specific C# scripts (e.g., rotation, etc.)
-    - [Dashboard](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets/LabBenchStudios/ProgrammingDigitalTwins/Scripts/Unity/Dashboard): Contains dashboard-specific C# scripts (e.g., 2D / 3D test messaging).
-    - [Manager](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/Assets/LabBenchStudios/ProgrammingDigitalTwins/Scripts/Unity/Manager): Contains manager-related C# scripts (e.g., event handling).
+- [LabBenchStudios/ProgrammingDigitalTwins](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/LabBenchStudios/ProgrammingDigitalTwins): All other assets are contained within this path.
+  - [Materials](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/LabBenchStudios/ProgrammingDigitalTwins/Materials): Contains some initial materials.
+  - [Prefabs](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/LabBenchStudios/ProgrammingDigitalTwins/Prefabs): Contains some initial prefabs.
+  - [Scripts/Unity](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/LabBenchStudios/ProgrammingDigitalTwins/Scripts/Unity): Contains all Unity-specific C# scripts.
+    - [Common](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/LabBenchStudios/ProgrammingDigitalTwins/Scripts/Unity/Common): Contains shared C# scripts.
+    - [Controller](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/LabBenchStudios/ProgrammingDigitalTwins/Scripts/Unity/Controller): Contains controller-specific C# scripts (e.g., rotation, etc.)
+    - [Dashboard](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/LabBenchStudios/ProgrammingDigitalTwins/Scripts/Unity/Dashboard): Contains dashboard-specific C# scripts (e.g., 2D / 3D test messaging).
+    - [Manager](https://github.com/programming-digital-twins/pdt-unity-components/tree/alpha/LabBenchStudios/ProgrammingDigitalTwins/Scripts/Unity/Manager): Contains manager-related C# scripts (e.g., event handling).
 
 Here are some other files at the top level that are important to review:
 - [README.md](https://github.com/programming-digital-twins/pdt-unity-components/blob/alpha/README.md): This README.
 - [LICENSE](https://github.com/programming-digital-twins/pdt-unity-components/blob/alpha/LICENSE): The repository's non-code artifact LICENSE file (e.g., documentation, prefabs, etc.)
-- [LICENSE-CODE](https://github.com/programming-digital-twins/pdt-unity-components/blob/alpha/LICENSE): The repository's code artifact LICENSE file (e.g., source code [mostly C#])
-
-Lastly, here are some 'dot' ('.{filename}') files pertaining to dev environment setup that you may find useful (or not - if so, just delete them after cloning the repo):
-- [.gitignore](https://github.com/programming-digital-twins/pdt-unity-components/blob/alpha/.gitignore): The obligatory .gitignore that you should probably keep in place, with any additions that are relevant for your own cloned instance.
+- [LICENSE-CODE](https://github.com/programming-digital-twins/pdt-unity-components/blob/alpha/LICENSE-CODE): The repository's code artifact LICENSE file (e.g., source code [mostly C#])
 
 NOTE: The directory structure and all files are subject to change based on feedback I receive from readers of my book and students in my IoT class, as well as improvements I find to be helpful for overall repo betterment.
 
