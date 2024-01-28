@@ -48,16 +48,14 @@ This repository has external dependencies on other open source projects. I'm gra
 
 - [pdt-cfw-components](https://github.com/programming-digital-twins/pdt-cfw-components)
   - Reference: Andrew D. King. Programming Digital Twins Client Framework Components. (2024) [Online]. Available: https://github.com/programming-digital-twins/pdt-cfw-components.
-- [DTDLParser](https://github.com/digitaltwinconsortium/DTDLParser)
-  - Reference: Digital Twin Consortium and contributors. (2024) [Online]. Available: https://github.com/digitaltwinconsortium/DTDLParser.
-- [InfluxDB.Client](https://github.com/influxdata/influxdb-client-csharp)
-  - Reference: InfluxData, Inc. Influx DB C# Client. (2024) [Online]. Available: https://github.com/influxdata/influxdb-client-csharp.
-- [MQTTnet](https://github.com/dotnet/MQTTnet)
-  - Reference: .NET Foundation and contributors. MQTTnet .NET library for MQTT communications. (2024) [Online]. Available: https://github.com/dotnet/MQTTnet.
-- [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json)
-  - Reference: James Newton-King. Json.NET JSON framework for .NET. (2024) [Online]. Available: https://github.com/JamesNK/Newtonsoft.Json.
-- [NUnit](https://nunit.org/)
-  - Reference: Charlie Poole, Rob Prouse. Nunit unit testing framework for .NET languages. (2024) [Online]. Available: https://github.com/nunit.
+  - NOTE: [pdt-cfw-components](https://github.com/programming-digital-twins/pdt-cfw-components) has its own dependencies, which can be found in its README.md documentation.
+
+# OTHER REFERENCES
+This repository is intended to be used as part of a Unity 3D project (see reference below). It is NOT intended to be used standalone.
+
+- [Unity 2022.3.14]([https://nunit.org/](https://unity.com/releases/editor/whats-new/2022.3.14))
+  - Reference: Unity Technologies. Unity Editor. (2024) [Online]. Available: https://unity.com/releases/editor/whats-new/2022.3.14.
+  - NOTE: This codebase and its references may function with other Unity Editor versions; however, all testing is currently done with version 2022.3.14. 
 
 NOTE: This list will be updated as others are incorporated.
 
