@@ -32,10 +32,21 @@ using LabBenchStudios.Pdt.Data;
 
 namespace LabBenchStudios.Pdt.Unity.Common
 {
-    public class EventProcessor : ISystemStatusEventListener
+    /**
+     * This class handles the registration of various event listeners and
+     * the distribution of incoming events (of various types) to all
+     * registered event listeners.
+     * 
+     * It is designed to be instanced once by the system manager, and then
+     * accessed via the Singleton-like 'GetInstance()' methods.
+     * 
+     * It is NOT designed to be used across scenes (yet).
+     * 
+     */
+    public class EventProcessor : MonoBehaviour, ISystemStatusEventListener
     {
-        private static string _GUID          = null;
-        private static bool   _IS_TERMINATED = false;
+        private static string _GUID = null;
+        private static bool _IS_TERMINATED = false;
 
         private static System.Object _LOCK_OBJ = new System.Object();
 
@@ -54,13 +65,14 @@ namespace LabBenchStudios.Pdt.Unity.Common
                 {
                     Debug.Log("Creating instance of EventProcessor.");
 
-                    _INSTANCE = new EventProcessor();
                     _GUID = System.Guid.NewGuid().ToString();
 
-                    Debug.unityLogger.logEnabled = false;
+                    return new EventProcessor();
                 }
-
-                return _INSTANCE;
+                else
+                {
+                    return _INSTANCE;
+                }
             }
         }
 
@@ -90,6 +102,7 @@ namespace LabBenchStudios.Pdt.Unity.Common
         public void OnDestroy()
         {
             _IS_TERMINATED = true;
+            _INSTANCE = null;
         }
 
         public void ClearAllListeners()

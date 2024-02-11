@@ -54,8 +54,6 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         [SerializeField]
         private GameObject formattedMsgDataDisplay = null;
 
-        private EventProcessor eventProcessor = null;
-
         private TMP_Text connStateLog = null;
         private TMP_Text connHostNameLog = null;
         private TMP_Text connMsgInLog = null;
@@ -148,10 +146,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                     this.formattedMsgDataLog = this.formattedMsgDataDisplay.GetComponent<TextMeshProUGUI>();
                 }
 
-                this.eventProcessor = EventProcessor.GetInstance();
-
-                this.eventProcessor.RegisterListener((ISystemStatusEventListener) this);
-                this.eventProcessor.RegisterListener((IDataContextEventListener) this);
+                base.RegisterForSystemStatusEvents((ISystemStatusEventListener) this);
             }
             catch (Exception ex)
             {

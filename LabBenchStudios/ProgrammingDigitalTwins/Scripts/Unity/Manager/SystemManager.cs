@@ -33,6 +33,9 @@ namespace LabBenchStudios.Pdt.Unity.Manager
     public class SystemManager : MonoBehaviour
     {
         [SerializeField]
+        private bool enableLogging = false;
+
+        [SerializeField]
         private bool enableLiveDataConnection = true;
 
         [SerializeField]
@@ -79,6 +82,8 @@ namespace LabBenchStudios.Pdt.Unity.Manager
         {
             DontDestroyOnLoad(gameObject);
 
+            Debug.unityLogger.logEnabled = this.enableLogging;
+
             this.eventProcessor = EventProcessor.GetInstance();
             this.isInitialized = true;
         }
@@ -117,7 +122,7 @@ namespace LabBenchStudios.Pdt.Unity.Manager
         {
             string msg = "System manager initializing...";
 
-            Debug.LogWarning(msg);
+            Debug.Log(msg);
 
             this.mqttClient = new MqttClientManagedConnector(this.messagingHostName, this.messagingHostPort, null, this.eventProcessor);
         }

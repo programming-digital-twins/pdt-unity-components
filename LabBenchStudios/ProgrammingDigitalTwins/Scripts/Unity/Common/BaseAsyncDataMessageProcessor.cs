@@ -250,6 +250,13 @@ namespace LabBenchStudios.Pdt.Unity.Common
             if (message != null) Debug.LogError(message);
         }
 
+        protected void RegisterForSystemStatusEvents(ISystemStatusEventListener listener)
+        {
+            if (listener != null)
+            {
+                this.eventProcessor.RegisterListener(listener);
+            }
+        }
 
         // protected template methods
 
