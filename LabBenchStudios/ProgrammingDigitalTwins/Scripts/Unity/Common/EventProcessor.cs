@@ -43,7 +43,7 @@ namespace LabBenchStudios.Pdt.Unity.Common
      * It is NOT designed to be used across scenes (yet).
      * 
      */
-    public class EventProcessor : MonoBehaviour, ISystemStatusEventListener
+    public class EventProcessor : ISystemStatusEventListener
     {
         private static string _GUID = null;
         private static bool _IS_TERMINATED = false;
