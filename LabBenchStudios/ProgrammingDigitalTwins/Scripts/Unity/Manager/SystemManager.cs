@@ -42,6 +42,9 @@ namespace LabBenchStudios.Pdt.Unity.Manager
         private bool enableStoredDataConnection = false;
 
         [SerializeField]
+        private string messagingTopicPrefixName = ConfigConst.PRODUCT_NAME;
+
+        [SerializeField]
         private string messagingHostName = ConfigConst.DEFAULT_HOST;
         
         [SerializeField]
@@ -124,7 +127,9 @@ namespace LabBenchStudios.Pdt.Unity.Manager
 
             Debug.Log(msg);
 
-            this.mqttClient = new MqttClientManagedConnector(this.messagingHostName, this.messagingHostPort, null, this.eventProcessor);
+            this.mqttClient =
+                new MqttClientManagedConnector(
+                    this.messagingHostName, this.messagingHostPort, this.messagingTopicPrefixName, this.eventProcessor);
         }
     }
 }
