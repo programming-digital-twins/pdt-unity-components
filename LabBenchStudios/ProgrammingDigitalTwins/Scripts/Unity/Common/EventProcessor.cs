@@ -25,10 +25,11 @@
 using System;
 using System.Collections.Generic;
 
-using UnityEngine;
+//using UnityEngine;
 
 using LabBenchStudios.Pdt.Common;
 using LabBenchStudios.Pdt.Data;
+using LabBenchStudios.Pdt.Unity.Manager;
 
 namespace LabBenchStudios.Pdt.Unity.Common
 {
@@ -63,7 +64,7 @@ namespace LabBenchStudios.Pdt.Unity.Common
 
                 if (_INSTANCE == null)
                 {
-                    Debug.Log("Creating instance of EventProcessor.");
+                   //Debug.Log("Creating instance of EventProcessor.");
 
                     _GUID = System.Guid.NewGuid().ToString();
 
@@ -83,6 +84,8 @@ namespace LabBenchStudios.Pdt.Unity.Common
 
 
         // private member vars
+
+        private SystemManager remoteCommandProcessor = null;
 
         private List<IDataContextEventListener> dataContextEventListenerList = null;
         private List<ISystemStatusEventListener> systemStatusEventListenerList = null;
@@ -132,6 +135,16 @@ namespace LabBenchStudios.Pdt.Unity.Common
             }
         }
 
+        public void SetRemoteCommandProcessor(SystemManager cmdProcessor)
+        {
+            // can only be set once - it's expected the SystemManager will
+            // invoke this once after retrieving the EventProcessor Singleton
+            if (this.remoteCommandProcessor == null)
+            {
+                this.remoteCommandProcessor = cmdProcessor;
+            }
+        }
+
         public void LogDebugMessage(string message)
         {
             if (! string.IsNullOrEmpty(message))
@@ -176,6 +189,18 @@ namespace LabBenchStudios.Pdt.Unity.Common
 
         public void OnMessagingSystemDataReceived(ActuatorData data)
         {
+            // TODO:
+            //
+            // update to pass the SensorData into the DigitalTwinModelManager,
+            // which will determine which registered component should receive
+            // the update
+            //
+            // the event listener list(s) will need to be adjusted to account
+            // for DTMI-based indexing so the event processor has limited
+            // work to do for each incoming message
+            //
+            // (e.g., those components attached to a particular model will
+            // receive their respective updates, and no others)
             if (this.systemStatusEventListenerList.Count > 0)
             {
                 foreach (var listener in this.dataContextEventListenerList)
@@ -187,6 +212,18 @@ namespace LabBenchStudios.Pdt.Unity.Common
 
         public void OnMessagingSystemDataReceived(ConnectionStateData data)
         {
+            // TODO:
+            //
+            // update to pass the SensorData into the DigitalTwinModelManager,
+            // which will determine which registered component should receive
+            // the update
+            //
+            // the event listener list(s) will need to be adjusted to account
+            // for DTMI-based indexing so the event processor has limited
+            // work to do for each incoming message
+            //
+            // (e.g., those components attached to a particular model will
+            // receive their respective updates, and no others)
             if (this.systemStatusEventListenerList.Count > 0)
             {
                 foreach (var listener in this.systemStatusEventListenerList)
@@ -198,6 +235,18 @@ namespace LabBenchStudios.Pdt.Unity.Common
 
         public void OnMessagingSystemDataReceived(SensorData data)
         {
+            // TODO:
+            //
+            // update to pass the SensorData into the DigitalTwinModelManager,
+            // which will determine which registered component should receive
+            // the update
+            //
+            // the event listener list(s) will need to be adjusted to account
+            // for DTMI-based indexing so the event processor has limited
+            // work to do for each incoming message
+            //
+            // (e.g., those components attached to a particular model will
+            // receive their respective updates, and no others)
             if (this.systemStatusEventListenerList.Count > 0)
             {
                 foreach (var listener in this.dataContextEventListenerList)
@@ -209,6 +258,18 @@ namespace LabBenchStudios.Pdt.Unity.Common
 
         public void OnMessagingSystemDataReceived(SystemPerformanceData data)
         {
+            // TODO:
+            //
+            // update to pass the SensorData into the DigitalTwinModelManager,
+            // which will determine which registered component should receive
+            // the update
+            //
+            // the event listener list(s) will need to be adjusted to account
+            // for DTMI-based indexing so the event processor has limited
+            // work to do for each incoming message
+            //
+            // (e.g., those components attached to a particular model will
+            // receive their respective updates, and no others)
             if (this.systemStatusEventListenerList.Count > 0)
             {
                 foreach (var listener in this.dataContextEventListenerList)
@@ -237,6 +298,14 @@ namespace LabBenchStudios.Pdt.Unity.Common
                 {
                     listener.OnMessagingSystemStatusUpdate(data);
                 }
+            }
+        }
+
+        public void SubmitRemoteCommandRequest(ResourceNameContainer resource)
+        {
+            if (this.remoteCommandProcessor != null)
+            {
+                this.remoteCommandProcessor.HandleRemoteCommandRequest(resource);
             }
         }
 
