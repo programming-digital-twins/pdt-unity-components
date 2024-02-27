@@ -1,0 +1,41 @@
+{
+  "@context": "dtmi:dtdl:context;3",
+  "@id": "dtmi:com:labbenchstudios:pdt:iot_data_context;1",
+  "@type": "Interface",
+  "displayName": "IoT Data Context",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "context",
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "name",
+            "schema": "string"
+          },
+          {
+            "name": "deviceID",
+            "schema": "string"
+          },
+          {
+            "name": "locationID",
+            "schema": "string"
+          },
+          {
+            "name": "timeStamp",
+            "schema": "dateTime"
+          },
+          {
+            "name": "typeCategoryID",
+            "schema": "integer"
+          },
+          {
+            "name": "typeID",
+            "schema": "integer"
+          }
+        ]
+      }
+    }
+  ]
+}

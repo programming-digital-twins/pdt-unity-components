@@ -1,0 +1,77 @@
+{
+  "@context": "dtmi:dtdl:context;3",
+  "@id": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+  "@type": "Interface",
+  "displayName": "IoT Model Context",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "name",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "deviceID",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "locationID",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "timeStamp",
+      "schema": "dateTime"
+    },
+    {
+      "@type": "Property",
+      "name": "typeCategoryID",
+      "schema": "integer"
+    },
+    {
+      "@type": "Property",
+      "name": "typeID",
+      "schema": "integer"
+    },
+    {
+      "@type": "Property",
+      "name": "isEnabled",
+      "schema": "boolean"
+    },
+    {
+      "@type": "Telemetry",
+      "name": "isSystemOnline",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "offline",
+            "displayName": "Offline",
+            "enumValue": 1
+          },
+          {
+            "name": "online",
+            "displayName": "Online",
+            "enumValue": 2
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Command",
+      "name": "update",
+      "request": {
+        "name": "updateTime",
+        "displayName": "Update Time",
+        "description": "Requested Time to Execute Update.",
+        "schema": "dateTime"
+      },
+      "response": {
+        "name": "commandProcessed",
+        "schema": "boolean"
+      }
+    }
+  ]
+}

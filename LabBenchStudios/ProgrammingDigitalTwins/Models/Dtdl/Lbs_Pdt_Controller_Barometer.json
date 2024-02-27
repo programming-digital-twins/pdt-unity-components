@@ -1,0 +1,47 @@
+{
+  "@id": "dtmi:LabBenchStudios:PDT:barometer;1",
+  "@type": "Interface",
+  "@context": [
+    "dtmi:dtdl:context;3",
+    "dtmi:dtdl:extension:quantitativeTypes;1"
+  ],
+  "displayName": "Barometer",
+  "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+  "contents": [
+    {
+      "@type": [ "Property", "Pressure" ],
+      "name": "barometricPressureFloor",
+      "displayName": "Floor Value for Barometric Pressure Alert",
+      "writable": true,
+      "schema": "float",
+      "unit": "millibar"
+    },
+    {
+      "@type": [ "Property", "Pressure" ],
+      "name": "barometricPressureCeiling",
+      "displayName": "Ceiling Value for Barometric Pressure Alert",
+      "writable": true,
+      "schema": "float",
+      "unit": "millibar"
+    },
+    {
+      "@type": "Component",
+      "name": "barometricPressure",
+      "schema": "dtmi:LabBenchStudios:PDT:barometricPressureData;1"
+    },
+    {
+      "@type": "Command",
+      "name": "enableReadings",
+      "request": {
+        "name": "runBarometer",
+        "displayName": "Run Barometer",
+        "description": "Starts the barometer reading cycle.",
+        "schema": "boolean"
+      },
+      "response": {
+        "name": "barometerRunning",
+        "schema": "boolean"
+      }
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "@id": "dtmi:LabBenchStudios:PDT:environmentalSensorData;1",
+    "@type": "Interface",
+    "@context": [
+      "dtmi:dtdl:context;3",
+      "dtmi:dtdl:extension:quantitativeTypes;1"
+    ],
+    "displayName": "Room Environmental Sensors",
+    "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+    "contents": [
+      {
+        "@type": "Component",
+        "name": "relativeHumidity",
+        "schema": "dtmi:LabBenchStudios:PDT:relativeHumidityData;1"
+      },
+      {
+        "@type": "Component",
+        "name": "barometricPressure",
+        "schema": "dtmi:LabBenchStudios:PDT:barometricPressureData;1"
+      },
+      {
+        "@type": "Component",
+        "name": "temperature",
+        "schema": "dtmi:LabBenchStudios:PDT:temperatureData;1"
+      }
+    ]
+  },
+  {
+    "@id": "dtmi:LabBenchStudios:PDT:relativeHumidityData;1",
+    "@type": "Interface",
+    "@context": [
+      "dtmi:dtdl:context;3",
+      "dtmi:dtdl:extension:quantitativeTypes;1"
+    ],
+    "displayName": "Relative Humidity",
+    "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+    "contents": [
+      {
+        "@type": [ "Telemetry", "RelativeHumidity" ],
+        "name": "relativeHumidity",
+        "displayName": "Relative Humidity in Percent",
+        "schema": "float",
+        "unit": "percent"
+      }
+    ]
+  },
+  {
+    "@id": "dtmi:LabBenchStudios:PDT:barometricPressureData;1",
+    "@type": "Interface",
+    "@context": [
+      "dtmi:dtdl:context;3",
+      "dtmi:dtdl:extension:quantitativeTypes;1"
+    ],
+    "displayName": "Barometric Pressure",
+    "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+    "contents": [
+      {
+        "@type": [ "Telemetry", "Pressure" ],
+        "name": "barometricPressure",
+        "displayName": "Barometric Pressure in Millibar",
+        "schema": "float",
+        "unit": "millibar"
+      }
+    ]
+  },
+  {
+    "@id": "dtmi:LabBenchStudios:PDT:temperatureData;1",
+    "@type": "Interface",
+    "@context": [
+      "dtmi:dtdl:context;3",
+      "dtmi:dtdl:extension:quantitativeTypes;1"
+    ],
+    "displayName": "Temperature",
+    "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+    "contents": [
+      {
+        "@type": [ "Telemetry", "Temperature" ],
+        "name": "temperature",
+        "displayName": "Temperature in Celsius",
+        "schema": "float",
+        "unit": "degreeCelsius"
+      }
+    ]
+  }
+]

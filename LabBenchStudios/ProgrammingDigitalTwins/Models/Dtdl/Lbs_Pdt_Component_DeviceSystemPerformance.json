@@ -1,0 +1,40 @@
+{
+  "@id": "dtmi:LabBenchStudios:PDT:systemPerformanceData;1",
+  "@type": "Interface",
+  "@context": [
+    "dtmi:dtdl:context;3",
+    "dtmi:dtdl:extension:quantitativeTypes;1"
+  ],
+  "displayName": "Edge Device System Performance",
+  "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+  "contents": [
+    {
+      "@type": [ "Telemetry", "EnergyRate" ],
+      "name": "powerDraw",
+      "displayName": "Power Draw in Watts",
+      "schema": "float",
+      "unit": "watt"
+    },
+    {
+      "@type": [ "Telemetry", "Concentration" ],
+      "name": "cpuUtil",
+      "displayName": "CPU Utilization in Percent",
+      "schema": "float",
+      "unit": "percent"
+    },
+    {
+      "@type": [ "Telemetry", "Concentration" ],
+      "name": "diskUtil",
+      "displayName": "Disk Utilization in Percent",
+      "schema": "float",
+      "unit": "percent"
+    },
+    {
+      "@type": [ "Telemetry", "Concentration" ],
+      "name": "memUtil",
+      "displayName": "Memory Utilization in Percent",
+      "schema": "float",
+      "unit": "percent"
+    }
+  ]
+}

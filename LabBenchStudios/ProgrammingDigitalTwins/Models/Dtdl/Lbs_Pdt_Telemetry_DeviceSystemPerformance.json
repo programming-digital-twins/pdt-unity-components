@@ -1,0 +1,32 @@
+[
+  {
+    "@id": "dtmi:com:labbenchstudios:pdt:sys_performance_data_context;1",
+    "@type": "Interface",
+    "@context": [
+      "dtmi:dtdl:context;3",
+      "dtmi:dtdl:extension:quantitativeTypes;1"
+    ],
+    "displayName": "Edge Device System Performance",
+    "extends": "dtmi:com:labbenchstudios:pdt:iot_data_context;1",
+    "contents": [
+      {
+        "@type": [ "Telemetry", "Concentration" ],
+        "name": "cpuUtil",
+        "schema": "float",
+        "unit": "percent"
+      },
+      {
+        "@type": [ "Telemetry", "Concentration" ],
+        "name": "diskUtil",
+        "schema": "float",
+        "unit": "percent"
+      },
+      {
+        "@type": [ "Telemetry", "Concentration" ],
+        "name": "memUtil",
+        "schema": "float",
+        "unit": "percent"
+      }
+    ]
+  }
+]

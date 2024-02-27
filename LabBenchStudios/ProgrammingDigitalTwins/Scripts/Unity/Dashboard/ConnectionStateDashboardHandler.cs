@@ -192,11 +192,12 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         {
             if (data != null)
             {
-                String connStateMsg = "Checking...";
+                String connStateMsg = "...";
 
                 if (data.IsClientConnected()) connStateMsg = "Connected";
-                if (data.IsClientConnecting()) connStateMsg = "Connecting...";
-                if (data.IsClientDisconnected()) connStateMsg = "Disconnected";
+                else if (data.IsClientConnecting()) connStateMsg = "Connecting...";
+                else if (data.IsClientDisconnected()) connStateMsg = "Disconnected";
+                else connStateMsg = "Unknown";
 
                 if (this.connStateLog != null) this.connStateLog.text = connStateMsg;
                 if (this.connHostNameLog != null) this.connHostNameLog.text = data.GetHostName();

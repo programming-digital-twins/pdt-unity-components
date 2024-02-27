@@ -1,0 +1,42 @@
+{
+  "@context": "dtmi:dtdl:context;3",
+  "@id": "dtmi:LabBenchStudios:PDT:heatingZone;1",
+  "@type": "Interface",
+  "displayName": "Heating Zone",
+  "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "zoneName",
+      "schema": "string"
+    },
+    {
+      "@type": "Relationship",
+      "name": "thermostat",
+      "minMultiplicity": 0,
+      "maxMultiplicity": 1,
+      "target": "dtmi:LabBenchStudios:PDT:thermostat;1"
+    },
+    {
+      "@type": "Relationship",
+      "name": "circulatorPump",
+      "minMultiplicity": 0,
+      "maxMultiplicity": 1,
+      "target": "dtmi:LabBenchStudios:PDT:fluidPump;1"
+    },
+    {
+      "@type": "Command",
+      "name": "enableHeating",
+      "request": {
+        "name": "runZone",
+        "displayName": "Run Heating Zone",
+        "description": "Triggers the heating zone to run based on current thermostat and circulator pump state.",
+        "schema": "boolean"
+      },
+      "response": {
+        "name": "zoneRunning",
+        "schema": "boolean"
+      }
+    }
+  ]
+}

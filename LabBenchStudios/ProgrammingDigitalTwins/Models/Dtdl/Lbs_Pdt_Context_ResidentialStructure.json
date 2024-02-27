@@ -1,0 +1,53 @@
+{
+  "@context": "dtmi:dtdl:context;3",
+  "@id": "dtmi:LabBenchStudios:PDT:residentialStructure;1",
+  "@type": "Interface",
+  "displayName": "Residential Structure",
+  "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "floorCount",
+      "schema": "integer"
+    },
+    {
+      "@type": "Property",
+      "name": "hasBasement",
+      "schema": "boolean"
+    },
+    {
+      "@type": "Property",
+      "name": "hasRevolvingCube",
+      "writable": true,
+      "schema": "boolean"
+    },
+    {
+      "@type": "Relationship",
+      "name": "barometer",
+      "minMultiplicity": 0,
+      "maxMultiplicity": 1,
+      "target": "dtmi:LabBenchStudios:PDT:barometer;1"
+    },
+    {
+      "@type": "Relationship",
+      "name": "heatingSystem",
+      "minMultiplicity": 0,
+      "maxMultiplicity": 2,
+      "target": "dtmi:LabBenchStudios:PDT:heatingSystem;1"
+    },
+    {
+      "@type": "Relationship",
+      "name": "interiorRoom",
+      "minMultiplicity": 0,
+      "maxMultiplicity": 20,
+      "target": "dtmi:LabBenchStudios:PDT:interiorRoom;1"
+    },
+    {
+      "@type": "Relationship",
+      "name": "powerWindmill",
+      "minMultiplicity": 0,
+      "maxMultiplicity": 2,
+      "target": "dtmi:LabBenchStudios:PDT:powerWindmill;1"
+    }
+  ]
+}

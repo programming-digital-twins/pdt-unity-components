@@ -1,0 +1,32 @@
+[
+  {
+    "@id": "dtmi:com:labbenchstudios:pdt:env_sensor_data_context;1",
+    "@type": "Interface",
+    "@context": [
+      "dtmi:dtdl:context;3",
+      "dtmi:dtdl:extension:quantitativeTypes;1"
+    ],
+    "displayName": "Room Environmental Sensors",
+    "extends": "dtmi:com:labbenchstudios:pdt:iot_data_context;1",
+    "contents": [
+      {
+        "@type": [ "Telemetry", "Pressure" ],
+        "name": "barometer",
+        "schema": "float",
+        "unit": "millibar"
+      },
+      {
+        "@type": [ "Telemetry", "RelativeHumidity" ],
+        "name": "relativeHumidity",
+        "schema": "float",
+        "unit": "percent"
+      },
+      {
+        "@type": [ "Telemetry", "Temperature" ],
+        "name": "thermometer",
+        "schema": "float",
+        "unit": "degreeCelsius"
+      }
+    ]
+  }
+]

@@ -1,0 +1,46 @@
+{
+  "@id": "dtmi:LabBenchStudios:PDT:heatingSystem;1",
+  "@type": "Interface",
+  "@context": [
+    "dtmi:dtdl:context;3",
+    "dtmi:dtdl:extension:quantitativeTypes;1"
+  ],
+  "displayName": "Heating System",
+  "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "lastMaintenanceDate",
+      "writable": true,
+      "schema": "dateTime"
+    },
+    {
+      "@type": [ "Property", "Voltage" ],
+      "name": "systemVoltage",
+      "displayName": "System Voltage",
+      "schema": "float",
+      "unit": "volt"
+    },
+    {
+      "@type": [ "Telemetry", "EnergyRate" ],
+      "name": "powerDraw",
+      "displayName": "Power Draw in Watts",
+      "schema": "float",
+      "unit": "watt"
+    },
+    {
+      "@type": [ "Telemetry", "TimeSpan" ],
+      "name": "systemUptime",
+      "displayName": "Total System Uptime in Seconds",
+      "schema": "float",
+      "unit": "second"
+    },
+    {
+      "@type": "Relationship",
+      "name": "heatingZone",
+      "minMultiplicity": 0,
+      "maxMultiplicity": 10,
+      "target": "dtmi:LabBenchStudios:PDT:heatingZone;1"
+    }
+  ]
+}

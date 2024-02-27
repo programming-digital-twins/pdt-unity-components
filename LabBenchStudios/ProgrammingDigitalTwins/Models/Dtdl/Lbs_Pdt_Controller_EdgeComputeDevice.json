@@ -1,0 +1,36 @@
+{
+  "@id": "dtmi:LabBenchStudios:PDT:edgeComputeDevice;1",
+  "@type": "Interface",
+  "@context": [
+    "dtmi:dtdl:context;3",
+    "dtmi:dtdl:extension:quantitativeTypes;1"
+  ],
+  "displayName": "Edge Compute Device",
+  "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+  "contents": [
+    {
+      "@type": "Component",
+      "name": "systemPerformance",
+      "schema": "dtmi:LabBenchStudios:PDT:systemPerformanceData;1"
+    },
+    {
+      "@type": "Component",
+      "name": "systemTemperature",
+      "schema": "dtmi:LabBenchStudios:PDT:temperatureData;1"
+    },
+    {
+      "@type": "Command",
+      "name": "rebootSystem",
+      "request": {
+        "name": "reboot",
+        "displayName": "Reboot System",
+        "description": "Reboots the system.",
+        "schema": "boolean"
+      },
+      "response": {
+        "name": "rebootIssued",
+        "schema": "boolean"
+      }
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "@id": "dtmi:com:labbenchstudios:pdt:fluid_pump_data_context;1",
+    "@type": "Interface",
+    "@context": [
+      "dtmi:dtdl:context;3",
+      "dtmi:dtdl:extension:quantitativeTypes;1"
+    ],
+    "displayName": "Fluid Pump",
+    "extends": "dtmi:com:labbenchstudios:pdt:iot_data_context;1",
+    "contents": [
+      {
+        "@type": [ "Telemetry", "EnergyRate" ],
+        "name": "powerDraw",
+        "displayName": "Power Draw",
+        "schema": "float",
+        "unit": "watt"
+      },
+      {
+        "@type": [ "Telemetry", "Density" ],
+        "name": "density",
+        "displayName": "Fluid Density",
+        "schema": "float",
+        "unit": "milligramPerCubicMetre"
+      },
+      {
+        "@type": [ "Telemetry", "AngularVelocity" ],
+        "name": "revolutionPerMinute",
+        "displayName": "Impeller Rotations Per Minute",
+        "schema": "float",
+        "unit": "revolutionPerMinute"
+      },
+      {
+        "@type": [ "Telemetry", "VolumeFlowRate" ],
+        "name": "flowRate",
+        "displayName": "Fluid Flow Rate Volume",
+        "schema": "float",
+        "unit": "litrePerMinute"
+      },
+      {
+        "@type": [ "Telemetry", "Temperature" ],
+        "name": "sendTemp",
+        "displayName": "Fluid Send Temperature",
+        "schema": "float",
+        "unit": "degreeCelsius"
+      },
+      {
+        "@type": [ "Telemetry", "Temperature" ],
+        "name": "returnTemp",
+        "displayName": "Fluid Return Temperature",
+        "schema": "float",
+        "unit": "degreeCelsius"
+      }
+    ]
+  }
+]

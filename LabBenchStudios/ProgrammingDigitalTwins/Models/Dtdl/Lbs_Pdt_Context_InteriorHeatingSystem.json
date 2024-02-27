@@ -1,0 +1,82 @@
+{
+  "@context": "dtmi:dtdl:context;3",
+  "@id": "dtmi:com:labbenchstudios:pdt:interior_heating_system;1",
+  "@type": "Interface",
+  "displayName": "Interior Heating System",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "interiorRoomState",
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "lastOccupied",
+            "schema": "dateTime"
+          },
+          {
+            "name": "isOccupied",
+            "schema": "boolean"
+          },
+          {
+            "name": "isHeatingOn",
+            "schema": "boolean"
+          },
+          {
+            "name": "isHumidifierOn",
+            "schema": "boolean"
+          },
+          {
+            "name": "isAirConditioningOn",
+            "schema": "boolean"
+          },
+          {
+            "name": "zoneName",
+            "schema": "string"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Command",
+      "name": "reset",
+      "request": {
+        "name": "resetHeatingSystem",
+        "displayName": "Reset Heating System",
+        "description": "Flag to request reset of heating system (power cycle).",
+        "schema": "boolean"
+      },
+      "response": {
+        "name": "success",
+        "schema": "boolean"
+      }
+    },
+    {
+      "@type": "Telemetry",
+      "name": "currentTemperature",
+      "schema": "float"
+    },
+    {
+      "@type": "Property",
+      "name": "setTemperature",
+      "writable": true,
+      "schema": "float"
+    },
+    {
+      "@type": "Telemetry",
+      "name": "currentHumidity",
+      "schema": "float"
+    },
+    {
+      "@type": "Property",
+      "name": "setHumidity",
+      "writable": true,
+      "schema": "float"
+    },
+    {
+      "@type": "Telemetry",
+      "name": "currentPressure",
+      "schema": "float"
+    }
+  ]
+}

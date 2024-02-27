@@ -1,0 +1,55 @@
+{
+  "@id": "dtmi:LabBenchStudios:PDT:thermostat;1",
+  "@type": "Interface",
+  "@context": [
+    "dtmi:dtdl:context;3",
+    "dtmi:dtdl:extension:quantitativeTypes;1"
+  ],
+  "displayName": "Thermostat",
+  "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+  "contents": [
+    {
+      "@type": [ "Property", "Temperature" ],
+      "name": "targetTemperature",
+      "displayName": "Target Temperature in Celsuis",
+      "writable": true,
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
+      "@type": [ "Property", "Temperature" ],
+      "name": "minTemperature",
+      "displayName": "Min Temperature Setting in Celsuis",
+      "writable": true,
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
+      "@type": [ "Property", "Temperature" ],
+      "name": "maxTemperature",
+      "displayName": "Max Temperature Setting in Celsuis",
+      "writable": true,
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
+      "@type": "Component",
+      "name": "currentTemperature",
+      "schema": "dtmi:LabBenchStudios:PDT:temperatureData;1"
+    },
+    {
+      "@type": "Command",
+      "name": "adjustTemperature",
+      "request": {
+        "name": "updateTemperature",
+        "displayName": "Update Temperature",
+        "description": "Changes the target temperature of the thermostat.",
+        "schema": "boolean"
+      },
+      "response": {
+        "name": "temperatureUpdated",
+        "schema": "boolean"
+      }
+    }
+  ]
+}

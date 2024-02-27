@@ -31,6 +31,7 @@ using TMPro;
 
 using LabBenchStudios.Pdt.Common;
 using LabBenchStudios.Pdt.Data;
+using LabBenchStudios.Pdt.Model;
 
 namespace LabBenchStudios.Pdt.Unity.Common
 {
@@ -254,6 +255,7 @@ namespace LabBenchStudios.Pdt.Unity.Common
         {
             if (listener != null)
             {
+                Debug.Log("Registering for system status events...");
                 this.eventProcessor.RegisterListener(listener);
             }
         }

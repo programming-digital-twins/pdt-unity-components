@@ -1,0 +1,88 @@
+{
+  "@id": "dtmi:LabBenchStudios:PDT:fluidPump;1",
+  "@type": "Interface",
+  "@context": [
+    "dtmi:dtdl:context;3",
+    "dtmi:dtdl:extension:quantitativeTypes;1"
+  ],
+  "displayName": "Fluid Pump",
+  "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+  "contents": [
+    {
+      "@type": [ "Property", "Voltage" ],
+      "name": "systemVoltage",
+      "displayName": "System Voltage",
+      "schema": "float",
+      "unit": "volt"
+    },
+    {
+      "@type": [ "Property", "Density" ],
+      "name": "maxFluidDensity",
+      "displayName": "Max Fluid Density in Milligrams per Cubic Metre",
+      "writable": true,
+      "schema": "float",
+      "unit": "milligramPerCubicMetre"
+    },
+    {
+      "@type": [ "Property", "AngularVelocity" ],
+      "name": "thresholdRevolutionPerMinute",
+      "displayName": "Impeller Threshold Revolutions Per Minute",
+      "writable": true,
+      "schema": "float",
+      "unit": "revolutionPerMinute"
+    },
+    {
+      "@type": [ "Property", "AngularVelocity" ],
+      "name": "maxRevolutionPerMinute",
+      "displayName": "Impeller Max Revolutions Per Minute",
+      "writable": true,
+      "schema": "float",
+      "unit": "revolutionPerMinute"
+    },
+    {
+      "@type": [ "Telemetry", "EnergyRate" ],
+      "name": "powerDraw",
+      "displayName": "Power Draw in Watts",
+      "schema": "float",
+      "unit": "watt"
+    },
+    {
+      "@type": [ "Telemetry", "AngularVelocity" ],
+      "name": "currentRevolutionPerMinute",
+      "displayName": "Impeller Revolutions Per Minute",
+      "schema": "float",
+      "unit": "revolutionPerMinute"
+    },
+    {
+      "@type": [ "Telemetry", "VolumeFlowRate" ],
+      "name": "flowRate",
+      "displayName": "Fluid Flow Rate Volume in Litres / Minute",
+      "schema": "float",
+      "unit": "litrePerMinute"
+    },
+    {
+      "@type": "Component",
+      "name": "sendTemperature",
+      "schema": "dtmi:LabBenchStudios:PDT:temperatureData;1"
+    },
+    {
+      "@type": "Component",
+      "name": "returnTemperature",
+      "schema": "dtmi:LabBenchStudios:PDT:temperatureData;1"
+    },
+    {
+      "@type": "Command",
+      "name": "enablePump",
+      "request": {
+        "name": "runPump",
+        "displayName": "Run Pump",
+        "description": "Starts the Pump.",
+        "schema": "boolean"
+      },
+      "response": {
+        "name": "pumpRunning",
+        "schema": "boolean"
+      }
+    }
+  ]
+}

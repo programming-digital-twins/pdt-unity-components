@@ -1,0 +1,111 @@
+{
+  "@id": "dtmi:LabBenchStudios:PDT:powerWindmill;1",
+  "@type": "Interface",
+  "@context": [
+    "dtmi:dtdl:context;3",
+    "dtmi:dtdl:extension:quantitativeTypes;1"
+  ],
+  "displayName": "Power Windmill",
+  "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+  "contents": [
+    {
+      "@type": [ "Property", "Length" ],
+      "name": "bladeLength",
+      "displayName": "Blade Length in Metres",
+      "schema": "float",
+      "unit": "metre"
+    },
+    {
+      "@type": [ "Property", "EnergyRate" ],
+      "name": "startupPowerDraw",
+      "displayName": "Startup Power Draw in Watts",
+      "schema": "float",
+      "unit": "watt"
+    },
+    {
+      "@type": [ "Property", "Voltage" ],
+      "name": "startupVoltage",
+      "displayName": "Startup Voltage",
+      "schema": "float",
+      "unit": "volt"
+    },
+    {
+      "@type": [ "Property", "TimeSpan" ],
+      "name": "startupTimeSpan",
+      "displayName": "Time to Start Windmill in Seconds",
+      "schema": "float",
+      "unit": "second"
+    },
+    {
+      "@type": [ "Property", "AngularVelocity" ],
+      "name": "thresholdRevolutionPerMinute",
+      "displayName": "Blade Threshold Revolutions Per Minute",
+      "writable": true,
+      "schema": "float",
+      "unit": "revolutionPerMinute"
+    },
+    {
+      "@type": [ "Property", "AngularVelocity" ],
+      "name": "maxRevolutionPerMinute",
+      "displayName": "Blade Max Revolutions Per Minute",
+      "writable": true,
+      "schema": "float",
+      "unit": "revolutionPerMinute"
+    },
+    {
+      "@type": [ "Telemetry", "Density" ],
+      "name": "airDensity",
+      "displayName": "Air Density in Milligrams per Cubic Metre",
+      "schema": "float",
+      "unit": "milligramPerCubicMetre"
+    },
+    {
+      "@type": [ "Telemetry", "Velocity" ],
+      "name": "airSpeed",
+      "displayName": "Airspeed in Knots",
+      "schema": "float",
+      "unit": "knot"
+    },
+    {
+      "@type": [ "Telemetry", "AngularVelocity" ],
+      "name": "currentRevolutionPerMinute",
+      "displayName": "Blade Revolutions Per Minute",
+      "schema": "float",
+      "unit": "revolutionPerMinute"
+    },
+    {
+      "@type": [ "Telemetry", "EnergyRate" ],
+      "name": "outputPower",
+      "displayName": "Output Power in Kilowatts",
+      "schema": "float",
+      "unit": "kilowatt"
+    },
+    {
+      "@type": [ "Telemetry", "Voltage" ],
+      "name": "outputVoltage",
+      "displayName": "Output Voltage",
+      "schema": "float",
+      "unit": "volt"
+    },
+    {
+      "@type": "Component",
+      "name": "generatorTemperature",
+      "displayName": "Generator Operational Temperature in Celsius",
+      "schema": "dtmi:LabBenchStudios:PDT:temperatureData;1"
+    },
+    {
+      "@type": "Command",
+      "name": "enableWindmill",
+      "request": {
+        "name": "runWindmill",
+        "displayName": "Start Windmill",
+        "description": "Triggers the windmill to start under mains power.",
+        "schema": "boolean"
+      },
+      "response": {
+        "name": "windmillRunning",
+        "schema": "boolean"
+      }
+    }
+  ]
+}

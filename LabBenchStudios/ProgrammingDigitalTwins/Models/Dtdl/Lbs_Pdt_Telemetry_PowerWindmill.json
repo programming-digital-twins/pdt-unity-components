@@ -1,0 +1,84 @@
+[
+  {
+    "@id": "dtmi:com:labbenchstudios:pdt:power_windmill_data_context;1",
+    "@type": "Interface",
+    "@context": [
+      "dtmi:dtdl:context;3",
+      "dtmi:dtdl:extension:quantitativeTypes;1"
+    ],
+    "displayName": "Power Windmill",
+    "extends": "dtmi:com:labbenchstudios:pdt:iot_data_context;1",
+    "contents": [
+      {
+        "@type": [ "Telemetry", "Length" ],
+        "name": "bladeLength",
+        "displayName": "Blade Length",
+        "schema": "float",
+        "unit": "metre"
+      },
+      {
+        "@type": [ "Telemetry", "EnergyRate" ],
+        "name": "startupPowerDraw",
+        "displayName": "Startup Power Draw",
+        "schema": "float",
+        "unit": "watt"
+      },
+      {
+        "@type": [ "Telemetry", "Voltage" ],
+        "name": "startupVoltage",
+        "displayName": "Startup Voltage",
+        "schema": "float",
+        "unit": "volt"
+      },
+      {
+        "@type": [ "Telemetry", "TimeSpan" ],
+        "name": "startupTimeSpan",
+        "displayName": "Blade Length",
+        "schema": "float",
+        "unit": "second"
+      },
+      {
+        "@type": [ "Telemetry", "Density" ],
+        "name": "airDensity",
+        "displayName": "Blade Length",
+        "schema": "float",
+        "unit": "milligramPerCubicMetre"
+      },
+      {
+        "@type": [ "Telemetry", "Velocity" ],
+        "name": "airSpeed",
+        "displayName": "Airspeed",
+        "schema": "float",
+        "unit": "knot"
+      },
+      {
+        "@type": [ "Telemetry", "AngularVelocity" ],
+        "name": "revolutionPerMinute",
+        "displayName": "Blade Rotations Per Minute",
+        "schema": "float",
+        "unit": "revolutionPerMinute"
+      },
+      {
+        "@type": [ "Telemetry", "EnergyRate" ],
+        "name": "outputPower",
+        "displayName": "Output Power",
+        "schema": "float",
+        "unit": "kilowatt"
+      },
+      {
+        "@type": [ "Telemetry", "Voltage" ],
+        "name": "outputVoltage",
+        "displayName": "Output Voltage",
+        "schema": "float",
+        "unit": "volt"
+      },
+      {
+        "@type": [ "Telemetry", "Temperature" ],
+        "name": "generatorTemp",
+        "displayName": "Generator Operational Temperature",
+        "schema": "float",
+        "unit": "degreeCelsius"
+      }
+    ]
+  }
+]

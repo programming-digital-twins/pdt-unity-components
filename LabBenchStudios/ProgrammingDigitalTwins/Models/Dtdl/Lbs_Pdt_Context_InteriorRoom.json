@@ -1,0 +1,49 @@
+{
+  "@context": "dtmi:dtdl:context;3",
+  "@id": "dtmi:LabBenchStudios:PDT:interiorRoom;1",
+  "@type": "Interface",
+  "displayName": "Interior Room",
+  "extends": "dtmi:LabBenchStudios:PDT:iotModelContext;1",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "roomName",
+      "writable": true,
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "floorNumber",
+      "schema": "integer"
+    },
+    {
+      "@type": "Property",
+      "name": "hasAudio",
+      "schema": "boolean"
+    },
+    {
+      "@type": "Property",
+      "name": "hasMonitor",
+      "schema": "boolean"
+    },
+    {
+      "@type": "Property",
+      "name": "lastOccupiedDate",
+      "schema": "dateTime"
+    },
+    {
+      "@type": "Relationship",
+      "name": "humidifier",
+      "minMultiplicity": 0,
+      "maxMultiplicity": 1,
+      "target": "dtmi:LabBenchStudios:PDT:humidifier;1"
+    },
+    {
+      "@type": "Relationship",
+      "name": "thermostat",
+      "minMultiplicity": 0,
+      "maxMultiplicity": 1,
+      "target": "dtmi:LabBenchStudios:PDT:thermostat;1"
+    }
+  ]
+}

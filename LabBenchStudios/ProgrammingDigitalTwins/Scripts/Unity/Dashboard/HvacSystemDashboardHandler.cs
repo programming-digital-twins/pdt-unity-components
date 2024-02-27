@@ -92,6 +92,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             {
                 int typeID = data.GetDeviceType();
 
+                Debug.Log("Received SensorData: " + data + " - " + typeID);
+
                 if (typeID == ConfigConst.TEMP_SENSOR_TYPE && this.envCurTemperatureLog != null)
                 {
                     double cookedVal = Math.Round(data.GetValue(), 1);
