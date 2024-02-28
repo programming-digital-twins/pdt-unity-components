@@ -37,24 +37,32 @@ namespace LabBenchStudios.Pdt.Unity.Model
         [SerializeField]
         private GameObject digitalTwinDisplayMgr = null;
 
-        [SerializeField]
-        private bool disableCanvasOnStart = true;
-
         private Canvas digitalTwinDisplayMgrCanvas = null;
+        private CanvasGroup digitalTwinDisplayMgrCanvasGroup = null;
 
         private bool hasDisplayCanvas = false;
+        private bool hasDisplayCanvasGroup = false;
+
+        private bool fadeInCanvasGroup = false;
+        private bool fadeOutCanvasGroup = false;
 
         private void Awake()
         {
             if (this.digitalTwinDisplayMgr != null)
             {
                 this.digitalTwinDisplayMgrCanvas = this.digitalTwinDisplayMgr.GetComponent<Canvas>();
+                this.digitalTwinDisplayMgrCanvasGroup = this.digitalTwinDisplayMgr.GetComponent<CanvasGroup>();
 
                 if (this.digitalTwinDisplayMgrCanvas != null )
                 {
                     this.hasDisplayCanvas = true;
+                    this.digitalTwinDisplayMgrCanvas.enabled = false;
+                }
 
-                    if (this.disableCanvasOnStart) this.digitalTwinDisplayMgrCanvas.enabled = false;
+                if (this.digitalTwinDisplayMgrCanvasGroup != null)
+                {
+                    this.hasDisplayCanvasGroup = true;
+                    this.digitalTwinDisplayMgrCanvasGroup.alpha = 0;
                 }
             }
         }
@@ -67,7 +75,16 @@ namespace LabBenchStudios.Pdt.Unity.Model
             {
                 Debug.Log($"Enabling Digital Twin HUD...");
 
-                if (this.hasDisplayCanvas) this.digitalTwinDisplayMgrCanvas.enabled = true;
+                // enable the canvas straight away - it will fade in shortly
+                if (this.hasDisplayCanvas)
+                {
+                    this.digitalTwinDisplayMgrCanvas.enabled = true;
+                }
+
+                if (this.hasDisplayCanvasGroup)
+                {
+                    this.fadeInCanvasGroup = true;
+                }
             }
         }
 
@@ -79,7 +96,47 @@ namespace LabBenchStudios.Pdt.Unity.Model
             {
                 Debug.Log($"Disabling Digital Twin HUD...");
 
-                if (this.hasDisplayCanvas) this.digitalTwinDisplayMgrCanvas.enabled = false;
+                // wait to disable the canvas until fade out is complete
+                if (this.hasDisplayCanvasGroup)
+                {
+                    this.fadeOutCanvasGroup = true;
+                }
+            }
+        }
+
+        private void Update()
+        {
+            if (this.hasDisplayCanvasGroup)
+            {
+                if (this.fadeInCanvasGroup &&
+                    this.digitalTwinDisplayMgrCanvasGroup.alpha < 1)
+                {
+                    this.digitalTwinDisplayMgrCanvasGroup.alpha += Time.deltaTime;
+
+                    if (this.digitalTwinDisplayMgrCanvasGroup.alpha >= 1)
+                    {
+                        this.fadeInCanvasGroup = false;
+                    }
+                }
+
+                if (this.fadeOutCanvasGroup &&
+                    this.digitalTwinDisplayMgrCanvasGroup.alpha >= 0)
+                {
+                    this.digitalTwinDisplayMgrCanvasGroup.alpha -= Time.deltaTime;
+
+                    if (this.digitalTwinDisplayMgrCanvasGroup.alpha <= 0)
+                    {
+                        this.fadeOutCanvasGroup = false;
+
+                        // fade out complete, so disable the canvas
+                        // it will be re-enabled (with alpha == 0)
+                        // when the collider is triggered next
+                        if (this.hasDisplayCanvas)
+                        {
+                            this.digitalTwinDisplayMgrCanvas.enabled = false;
+                        }
+                    }
+                }
             }
         }
 

@@ -32,6 +32,7 @@ using TMPro;
 using LabBenchStudios.Pdt.Common;
 using LabBenchStudios.Pdt.Data;
 using LabBenchStudios.Pdt.Unity.Common;
+using LabBenchStudios.Pdt.Model;
 
 namespace LabBenchStudios.Pdt.Unity.Dashboard
 {
@@ -70,6 +71,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private TMP_Text startLiveDataFeedButtonText = null;
         private TMP_Text startSimDataFeedButtonText = null;
         private TMP_Text loadModelDataButtonText = null;
+
+        private string dtdlModelPath =
+            Application.dataPath + "/LabBenchStudios/ProgrammingDigitalTwins/Models/Dtdl";
 
         private bool isLiveDataEngaged = false;
         private bool isSimDataEngaged = false;
@@ -130,9 +134,58 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
-        public void LoadModelData()
+        public void InitializeAndLoadModelData()
         {
-            if (isLiveDataEngaged) return;
+            try
+            {
+                Debug.Log($"Attempting to init and load DTDL model data: {this.dtdlModelPath}");
+
+                EventProcessor eventProcessor = EventProcessor.GetInstance();
+                DigitalTwinModelManager dtModelManager = eventProcessor.GetDigitalTwinModelManager();
+
+                if (dtModelManager == null)
+                {
+                    Debug.Log("Creating DT Model Manager and registering with EventProcessor...");
+
+                    this.modelDataLoadStatusText.text = "Loading model data...";
+
+                    dtModelManager = new DigitalTwinModelManager(this.dtdlModelPath);
+                    eventProcessor.RegisterDigitalTwinModelManager(dtModelManager);
+
+                    if (dtModelManager.HasSuccessfulDataLoad())
+                    {
+                        eventProcessor.OnModelUpdateEvent();
+
+                        Debug.Log($"Loaded DTDL model data: {this.dtdlModelPath}");
+                        this.modelDataLoadStatusText.text = "Loaded model data.";
+                    }
+                    else
+                    {
+                        Debug.LogError($"Failed to load DTDL model data: {this.dtdlModelPath}");
+                        this.modelDataLoadStatusText.text = "Failed to load model data!";
+                    }
+                }
+                else
+                {
+                    this.modelDataLoadStatusText.text = "Reloading model data...";
+                    if (dtModelManager.ReloadDtdlModels(this.dtdlModelPath))
+                    {
+                        Debug.Log($"Reloaded DTDL model data: {this.dtdlModelPath}");
+                        this.modelDataLoadStatusText.text = "Reloaded model data.";
+                    }
+                    else
+                    {
+                        Debug.LogError($"Failed to reload DTDL model data: {this.dtdlModelPath}");
+                        this.modelDataLoadStatusText.text = "Failed to reload model data!";
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                this.modelDataLoadStatusText.text = "Failed to load model data.";
+                Debug.LogError($"Failed to load DTDL files from {this.dtdlModelPath}");
+            }
+                
         }
 
         // public callback methods
@@ -180,6 +233,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         public void OnMessagingSystemStatusUpdate(ConnectionStateData data)
         {
             base.HandleConnectionStateData(data);
+        }
+
+        public void OnModelUpdateEvent()
+        {
+            // nothing to do
         }
 
 
@@ -231,6 +289,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 if (this.filePathEntryStatusDisplay != null)
                 {
                     this.filePathEntryText = this.filePathEntryStatusDisplay.GetComponent<TextMeshProUGUI>();
+
+                    if (this.filePathEntryText != null)
+                    {
+                        this.filePathEntryText.text = this.dtdlModelPath;
+                    }
                 }
 
                 if (this.modelLoadButtonObject != null)
@@ -239,7 +302,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
                     if (this.loadModelDataButton != null)
                     {
-                        this.loadModelDataButton.onClick.AddListener(LoadModelData);
+                        this.loadModelDataButton.onClick.AddListener(() => this.InitializeAndLoadModelData());
                         this.loadModelDataButtonText =
                             this.loadModelDataButton.GetComponentInChildren<TextMeshProUGUI>();
                     }

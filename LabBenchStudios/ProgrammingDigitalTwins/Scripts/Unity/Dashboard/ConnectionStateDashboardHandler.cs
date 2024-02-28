@@ -109,6 +109,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             base.HandleConnectionStateData(data);
         }
 
+        public void OnModelUpdateEvent()
+        {
+            // nothing to do
+        }
+
 
         // protected
 

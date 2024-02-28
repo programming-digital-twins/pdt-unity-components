@@ -46,103 +46,122 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private ModelConst.DtmiControllerEnum modelType = ModelConst.DtmiControllerEnum.Custom;
 
         [SerializeField]
-        private GameObject dtmiHudPanel = null;
+        private GameObject modelPanel = null;
 
         [SerializeField]
-        private GameObject dtmiHudPanelModelIDObject = null;
+        private GameObject modelPanelIDObject = null;
 
         [SerializeField]
-        private GameObject dtmiHudPanelModelNameObject = null;
+        private GameObject modelPanelNameObject = null;
 
         [SerializeField]
-        private GameObject dtmiHudPanelContentObject = null;
+        private GameObject modelPanelContentObject = null;
 
         [SerializeField]
-        private GameObject dtmiHudPanelCloseButtonObject = null;
+        private GameObject modelPanelCloseButtonObject = null;
 
         [SerializeField]
-        private GameObject dtmiHudPanelShowButtonObject = null;
+        private GameObject modelPanelShowButtonObject = null;
 
         [SerializeField]
-        private GameObject deviceTwinUpdatePropertiesButtonObject = null;
+        private GameObject statusPanel = null;
 
         [SerializeField]
-        private GameObject devicePropertiesContentObject = null;
+        private GameObject statusPanelUpdatePropsButtonObject = null;
 
         [SerializeField]
-        private GameObject deviceModelNameObject = null;
+        private GameObject statusPanelPropsContentObject = null;
 
         [SerializeField]
-        private GameObject deviceModelIDObject = null;
+        private GameObject statusPanelNameObject = null;
 
         [SerializeField]
-        private GameObject deviceConnectionStateLabelObject = null;
+        private GameObject statusPanelIDObject = null;
 
         [SerializeField]
-        private GameObject deviceStateImageObject = null;
+        private GameObject statusPanelConnStateLabelObject = null;
 
         [SerializeField]
-        private GameObject deviceStateContentObject = null;
+        private GameObject statusPanelStateImageObject = null;
 
         [SerializeField]
-        private GameObject deviceStateStopButtonObject = null;
+        private GameObject statusPanelContentObject = null;
 
         [SerializeField]
-        private GameObject deviceStateStartButtonObject = null;
+        private GameObject statusPanelStopDeviceButtonObject = null;
 
         [SerializeField]
-        private GameObject deviceStateUpdateButtonObject = null;
+        private GameObject statusPanelStartDeviceButtonObject = null;
 
         [SerializeField]
-        private GameObject deviceStatePauseTelemetryButtonObject = null;
+        private GameObject statusPanelUpdateDeviceButtonObject = null;
 
         [SerializeField]
-        private GameObject deviceStatusPanelCloseButtonObject = null;
+        private GameObject statusPanelPauseDeviceButtonObject = null;
 
-        private TMP_Text deviceConnStateLabelText = null;
+        [SerializeField]
+        private GameObject statusPanelCloseButtonObject = null;
+
+        private TMP_Text connStateLabelText = null;
         private TMP_Text device = null;
-        private TMP_Text deviceModelID = null;
-        private TMP_Text deviceModelName = null;
+        private TMP_Text statusPanelID = null;
+        private TMP_Text statusPanelName = null;
         private TMP_Text modelDataLoadStatusText = null;
         private TMP_Text filePathEntryText = null;
 
-        private TMP_Text dtmiHudPanelModelID = null;
-        private TMP_Text dtmiHudPanelModelName = null;
+        private TMP_Text modelPanelID = null;
+        private TMP_Text modelPanelName = null;
+        private TMP_Text modelContentText = null;
 
-        private Image deviceStateLabelImage = null;
+        private Image statusPanelStateImage = null;
 
         private Button startDeviceButton = null;
         private Button stopDeviceButton = null;
-        private Button showDtmiHudPanelButton = null;
-        private Button closeDtmiHudPanelButton = null;
         private Button updateDeviceButton = null;
+        private Button pauseDeviceButton = null;
+        private Button showModelPanelButton = null;
+        private Button closeModelPanelButton = null;
+        private Button closeStatusPanelButton = null;
         private Button updateTwinPropertiesButton = null;
-        private Button pauseDeviceTelemetryButton = null;
-        private Button closeMgmtDialogButton = null;
 
-        private bool hasDtmiHudPanel = false;
-        private bool hasDtmiModelJsonContainer = false;
-        private bool hasDevicePropertiesContainer = false;
-        private bool hasDeviceTelemetryContainer = false;
+        private bool hasModelPanel = false;
+        private bool hasModelPanelJsonContainer = false;
+        private bool isModelPanelActive = false;
+
+        private bool hasStatusPanel = false;
+        private bool hasStatusPanelPropsContainer = false;
+        private bool hasStatusPanelTelemetryContainer = false;
 
         private string dtmiURI  = ModelConst.IOT_MODEL_CONTEXT_MODEL_ID;
         private string dtmiName = ModelConst.IOT_MODEL_CONTEXT_NAME;
 
+        private DigitalTwinModelState digitalTwinModelState = null;
+
+
         // public methods (button interactions)
 
-        public void HideDtmiHudPanel()
+        public void CloseStatusPanel()
         {
-            if (this.hasDtmiHudPanel)
+            if (this.hasStatusPanel)
             {
-                this.dtmiHudPanel.SetActive(false);
+                this.statusPanel.SetActive(false);
             }
         }
 
-        public void ShowDtmiHudPanel()
+        public void CloseModelPanel()
         {
-            if (this.hasDtmiHudPanel)
+            if (this.hasModelPanel)
             {
-                this.dtmiHudPanel.SetActive(true);
+                this.modelPanel.SetActive(false);
+            }
+        }
+
+        public void UpdateModelPanelVisibility()
+        {
+            if (this.hasModelPanel)
+            {
+                this.isModelPanelActive = ! this.isModelPanelActive;
+                this.modelPanel.SetActive(this.isModelPanelActive);
             }
         }
 
@@ -218,8 +237,178 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             base.HandleConnectionStateData(data);
         }
 
+        public void OnModelUpdateEvent()
+        {
+            EventProcessor eventProcessor = EventProcessor.GetInstance();
+            DigitalTwinModelManager dtModelManager = eventProcessor.GetDigitalTwinModelManager();
+
+            if (dtModelManager != null)
+            {
+                string rawModelJson = dtModelManager.GetRawModelJson(this.modelType);
+
+                this.digitalTwinModelState =
+                    dtModelManager.CreateModelState(
+                        this.modelType, (IDataContextEventListener)this, rawModelJson);
+
+                this.modelContentText.text = rawModelJson;
+
+                Debug.Log($"Created model state with URI {this.dtmiURI} and name {this.dtmiName}");
+                Debug.Log($"Raw DTDL JSON\n==========\n{rawModelJson}\n==========\n");
+            }
+        }
+
 
         // protected
+
+        private void InitStatusPanelControls()
+        {
+            if (this.statusPanel != null )
+            {
+                this.hasStatusPanel = true;
+            }
+
+            if (this.statusPanelConnStateLabelObject != null)
+            {
+                this.connStateLabelText = this.statusPanelConnStateLabelObject.GetComponent<TextMeshProUGUI>();
+            }
+
+            if (this.statusPanelStateImageObject != null)
+            {
+                this.statusPanelStateImage = this.statusPanelStateImageObject.GetComponent<Image>();
+            }
+
+            if (this.statusPanelNameObject != null)
+            {
+                this.statusPanelName = this.statusPanelNameObject.GetComponent<TextMeshProUGUI>();
+                this.statusPanelName.text = this.dtmiName;
+            }
+
+            if (this.statusPanelIDObject != null)
+            {
+                this.statusPanelID = this.statusPanelIDObject.GetComponent<TextMeshProUGUI>();
+                this.statusPanelID.text = this.dtmiURI;
+            }
+
+            if (this.statusPanelPropsContentObject != null)
+            {
+                this.hasStatusPanelPropsContainer = true;
+            }
+
+            if (this.statusPanelContentObject != null)
+            {
+                this.hasStatusPanelTelemetryContainer = true;
+            }
+
+            // init buttons
+            if (this.statusPanelCloseButtonObject != null)
+            {
+                this.closeStatusPanelButton = this.statusPanelCloseButtonObject.GetComponent<Button>();
+
+                if (this.closeStatusPanelButton != null)
+                {
+                    this.closeStatusPanelButton.onClick.AddListener(() => this.CloseStatusPanel());
+                }
+            }
+
+            if (this.statusPanelUpdatePropsButtonObject != null)
+            {
+                this.updateTwinPropertiesButton = this.statusPanelUpdatePropsButtonObject.GetComponent<Button>();
+
+                if (this.updateTwinPropertiesButton != null)
+                {
+                    this.updateTwinPropertiesButton.onClick.AddListener(() => this.UpdateTwinProperties());
+                }
+            }
+
+            if (this.statusPanelStartDeviceButtonObject != null)
+            {
+                this.startDeviceButton = this.statusPanelStartDeviceButtonObject.GetComponent<Button>();
+
+                if (this.startDeviceButton != null)
+                {
+                    this.startDeviceButton.onClick.AddListener(() => this.StartPhysicalDevice());
+                }
+            }
+
+            if (this.statusPanelStopDeviceButtonObject != null)
+            {
+                this.stopDeviceButton = this.statusPanelStopDeviceButtonObject.GetComponent<Button>();
+
+                if (this.stopDeviceButton != null)
+                {
+                    this.stopDeviceButton.onClick.AddListener(() => this.StopPhysicalDevice());
+                }
+            }
+
+            if (this.statusPanelUpdateDeviceButtonObject != null)
+            {
+                this.updateDeviceButton = this.statusPanelUpdateDeviceButtonObject.GetComponent<Button>();
+
+                if (this.updateDeviceButton != null)
+                {
+                    this.updateDeviceButton.onClick.AddListener(() => this.UpdatePhysicalDevice());
+                }
+            }
+
+            if (this.statusPanelPauseDeviceButtonObject != null)
+            {
+                this.pauseDeviceButton = this.statusPanelPauseDeviceButtonObject.GetComponent<Button>();
+
+                if (this.pauseDeviceButton != null)
+                {
+                    this.pauseDeviceButton.onClick.AddListener(() => this.PauseDeviceTelemetry());
+                }
+            }
+        }
+
+        private void InitModelPanelControls()
+        {
+            if (this.modelPanel != null)
+            {
+                this.hasModelPanel = true;
+                this.modelPanel.SetActive(false);
+            }
+
+            if (this.modelPanelNameObject != null)
+            {
+                this.modelPanelName = this.modelPanelNameObject.GetComponent<TextMeshProUGUI>();
+                this.modelPanelName.text = this.dtmiName;
+            }
+
+            if (this.modelPanelIDObject != null)
+            {
+                this.modelPanelID = this.modelPanelIDObject.GetComponent<TextMeshProUGUI>();
+                this.modelPanelID.text = this.dtmiURI;
+            }
+
+            if (this.modelPanelContentObject != null)
+            {
+                this.modelContentText = this.modelPanelContentObject.GetComponent<TextMeshProUGUI>();
+
+                if (this.modelContentText != null) this.hasModelPanelJsonContainer = true;
+            }
+
+            // init buttons
+            if (this.modelPanelCloseButtonObject != null)
+            {
+                this.closeModelPanelButton = this.modelPanelCloseButtonObject.GetComponent<Button>();
+
+                if (this.closeModelPanelButton != null)
+                {
+                    this.closeModelPanelButton.onClick.AddListener(() => this.CloseModelPanel());
+                }
+            }
+
+            if (this.modelPanelShowButtonObject != null)
+            {
+                this.showModelPanelButton = this.modelPanelShowButtonObject.GetComponent<Button>();
+
+                if (this.showModelPanelButton != null)
+                {
+                    this.showModelPanelButton.onClick.AddListener(() => this.UpdateModelPanelVisibility());
+                }
+            }
+        }
 
         protected override void InitMessageHandler()
         {
@@ -228,132 +417,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.dtmiURI  = ModelConst.CreateModelID(this.modelType, this.modelVersion);
                 this.dtmiName = ModelConst.GetNameFromDtmiURI(this.dtmiURI);
 
-                //this.gameObject.SetActive(false);
-
-                if (this.dtmiHudPanel != null)
-                {
-                    this.hasDtmiHudPanel = true;
-                    //this.dtmiHudPanel.SetActive(false);
-                }
-
-                if (this.dtmiHudPanelCloseButtonObject != null)
-                {
-                    this.closeDtmiHudPanelButton = this.dtmiHudPanelCloseButtonObject.GetComponent<Button>();
-                    
-                    if (this.closeDtmiHudPanelButton != null)
-                    {
-                        this.closeDtmiHudPanelButton.onClick.AddListener(() => HideDtmiHudPanel());
-                    }    
-                }
-
-                if (this.dtmiHudPanelShowButtonObject != null)
-                {
-                    this.showDtmiHudPanelButton = this.dtmiHudPanelShowButtonObject.GetComponent<Button>();
-
-                    if (this.showDtmiHudPanelButton != null)
-                    {
-                        this.showDtmiHudPanelButton.onClick.AddListener(() => ShowDtmiHudPanel());
-                    }
-                }
-
-                if (this.deviceConnectionStateLabelObject != null)
-                {
-                    this.deviceConnStateLabelText = this.deviceConnectionStateLabelObject.GetComponent<TextMeshProUGUI>();
-                }
-
-                if (this.deviceStateImageObject != null)
-                {
-                    this.deviceStateLabelImage = this.deviceStateImageObject.GetComponent<Image>();
-                }
-
-                if (this.deviceModelNameObject != null)
-                {
-                    this.deviceModelName = this.deviceModelNameObject.GetComponent<TextMeshProUGUI>();
-                    this.deviceModelName.text = this.dtmiName;
-                }
-
-                if (this.deviceModelIDObject != null)
-                {
-                    this.deviceModelID = this.deviceModelIDObject.GetComponent<TextMeshProUGUI>();
-                    this.deviceModelID.text = this.dtmiURI;
-                }
-
-                if (this.dtmiHudPanelModelNameObject != null)
-                {
-                    this.dtmiHudPanelModelName = this.dtmiHudPanelModelNameObject.GetComponent<TextMeshProUGUI>();
-                    this.dtmiHudPanelModelName.text = this.dtmiName;
-                }
-
-                if (this.dtmiHudPanelModelIDObject != null)
-                {
-                    this.dtmiHudPanelModelID = this.dtmiHudPanelModelIDObject.GetComponent<TextMeshProUGUI>();
-                    this.dtmiHudPanelModelID.text = this.dtmiURI;
-                }
-
-                if (this.devicePropertiesContentObject != null)
-                {
-                    this.hasDevicePropertiesContainer = true;
-                }
-
-                if (this.deviceStateContentObject != null)
-                {
-                    this.hasDeviceTelemetryContainer = true;
-                }
-
-                if (this.dtmiHudPanelContentObject != null)
-                {
-                    this.hasDtmiModelJsonContainer = true;
-                }
-
-                if (this.deviceTwinUpdatePropertiesButtonObject != null)
-                {
-                    this.updateTwinPropertiesButton = this.deviceTwinUpdatePropertiesButtonObject.GetComponent<Button>();
-
-                    if (this.updateTwinPropertiesButton != null)
-                    {
-                        this.updateTwinPropertiesButton.onClick.AddListener(() => this.UpdateTwinProperties());
-                    }
-                }
-
-                if (this.deviceStateStartButtonObject != null)
-                {
-                    this.startDeviceButton = this.deviceStateStartButtonObject.GetComponent<Button>();
-
-                    if (this.startDeviceButton != null)
-                    {
-                        this.startDeviceButton.onClick.AddListener(() => this.StartPhysicalDevice());
-                    }
-                }
-
-                if (this.deviceStateStopButtonObject != null)
-                {
-                    this.stopDeviceButton = this.deviceStateStopButtonObject.GetComponent<Button>();
-
-                    if (this.stopDeviceButton != null)
-                    {
-                        this.stopDeviceButton.onClick.AddListener(() => this.StopPhysicalDevice());
-                    }
-                }
-
-                if (this.deviceStateUpdateButtonObject != null)
-                {
-                    this.updateDeviceButton = this.deviceStateUpdateButtonObject.GetComponent<Button>();
-
-                    if (this.updateDeviceButton != null)
-                    {
-                        this.updateDeviceButton.onClick.AddListener(() => this.UpdatePhysicalDevice());
-                    }
-                }
-
-                if (this.deviceStatePauseTelemetryButtonObject != null)
-                {
-                    this.pauseDeviceTelemetryButton = this.deviceStatePauseTelemetryButtonObject.GetComponent<Button>();
-
-                    if (this.pauseDeviceTelemetryButton != null)
-                    {
-                        this.pauseDeviceTelemetryButton.onClick.AddListener(() => this.PauseDeviceTelemetry());
-                    }
-                }
+                this.InitStatusPanelControls();
+                this.InitModelPanelControls();
 
                 base.RegisterForSystemStatusEvents((ISystemStatusEventListener) this);
             }
@@ -406,7 +471,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 else if (data.IsClientDisconnected()) connStateMsg = "Disconnected";
                 else connStateMsg = "Unknown";
 
-                if (this.deviceConnStateLabelText != null) this.deviceConnStateLabelText.text = connStateMsg;
+                if (this.connStateLabelText != null) this.connStateLabelText.text = connStateMsg;
             }
         }
 
