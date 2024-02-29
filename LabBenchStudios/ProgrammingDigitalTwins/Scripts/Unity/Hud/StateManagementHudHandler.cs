@@ -54,7 +54,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private GameObject modelDataLoadStatusDisplay = null;
 
         [SerializeField]
-        private GameObject filePathEntryStatusDisplay = null;
+        private GameObject filePathNameDisplay = null;
 
         [SerializeField]
         private GameObject modelLoadButtonObject = null;
@@ -62,7 +62,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private TMP_Text liveDataStatusText = null;
         private TMP_Text simDataStatusText = null;
         private TMP_Text modelDataLoadStatusText = null;
-        private TMP_Text filePathEntryText = null;
+        private TMP_Text filePathDisplayText = null;
 
         private Button startLiveDataFeedButton = null;
         private Button startSimDataFeedButton = null;
@@ -70,10 +70,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         private TMP_Text startLiveDataFeedButtonText = null;
         private TMP_Text startSimDataFeedButtonText = null;
-        private TMP_Text loadModelDataButtonText = null;
 
-        private string dtdlModelPath =
-            Application.dataPath + "/LabBenchStudios/ProgrammingDigitalTwins/Models/Dtdl";
+        private string dtdlModelPath = DigitalTwinUtil.GetDtdlModelsPath();
 
         private bool isLiveDataEngaged = false;
         private bool isSimDataEngaged = false;
@@ -286,13 +284,13 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                     this.modelDataLoadStatusText = this.modelDataLoadStatusDisplay.GetComponent<TextMeshProUGUI>();
                 }
 
-                if (this.filePathEntryStatusDisplay != null)
+                if (this.filePathNameDisplay != null)
                 {
-                    this.filePathEntryText = this.filePathEntryStatusDisplay.GetComponent<TextMeshProUGUI>();
+                    this.filePathDisplayText = this.filePathNameDisplay.GetComponent<TextMeshProUGUI>();
 
-                    if (this.filePathEntryText != null)
+                    if (this.filePathDisplayText != null)
                     {
-                        this.filePathEntryText.text = this.dtdlModelPath;
+                        this.filePathDisplayText.text = this.dtdlModelPath;
                     }
                 }
 
@@ -303,8 +301,6 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                     if (this.loadModelDataButton != null)
                     {
                         this.loadModelDataButton.onClick.AddListener(() => this.InitializeAndLoadModelData());
-                        this.loadModelDataButtonText =
-                            this.loadModelDataButton.GetComponentInChildren<TextMeshProUGUI>();
                     }
                 }
 

@@ -34,6 +34,7 @@ using LabBenchStudios.Pdt.Data;
 using LabBenchStudios.Pdt.Model;
 
 using LabBenchStudios.Pdt.Unity.Common;
+using System.Collections.Generic;
 
 namespace LabBenchStudios.Pdt.Unity.Dashboard
 {
@@ -43,7 +44,16 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private int modelVersion = 1;
 
         [SerializeField]
-        private ModelConst.DtmiControllerEnum modelType = ModelConst.DtmiControllerEnum.Custom;
+        private ModelNameUtil.DtmiControllerEnum modelType = ModelNameUtil.DtmiControllerEnum.Custom;
+
+        [SerializeField]
+        private GameObject deviceIDObject = null;
+
+        [SerializeField]
+        private GameObject refreshDeviceIDButtonObject = null;
+
+        [SerializeField]
+        private GameObject deviceIDSelectorObject = null;
 
         [SerializeField]
         private GameObject modelPanel = null;
@@ -103,6 +113,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private GameObject statusPanelCloseButtonObject = null;
 
         private TMP_Text connStateLabelText = null;
+        private TMP_Text deviceIDText = null;
         private TMP_Text device = null;
         private TMP_Text statusPanelID = null;
         private TMP_Text statusPanelName = null;
@@ -113,8 +124,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private TMP_Text modelPanelName = null;
         private TMP_Text modelContentText = null;
 
+        private TMP_Dropdown deviceIDSelector = null;
+
         private Image statusPanelStateImage = null;
 
+        private Button refreshDeviceIDButton = null;
         private Button startDeviceButton = null;
         private Button stopDeviceButton = null;
         private Button updateDeviceButton = null;
@@ -132,8 +146,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private bool hasStatusPanelPropsContainer = false;
         private bool hasStatusPanelTelemetryContainer = false;
 
-        private string dtmiURI  = ModelConst.IOT_MODEL_CONTEXT_MODEL_ID;
-        private string dtmiName = ModelConst.IOT_MODEL_CONTEXT_NAME;
+        private string dtmiURI  = ModelNameUtil.IOT_MODEL_CONTEXT_MODEL_ID;
+        private string dtmiName = ModelNameUtil.IOT_MODEL_CONTEXT_NAME;
+        private string deviceID = ConfigConst.NOT_SET;
 
         private DigitalTwinModelState digitalTwinModelState = null;
 
@@ -153,6 +168,46 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             if (this.hasModelPanel)
             {
                 this.modelPanel.SetActive(false);
+            }
+        }
+
+        public void OnDeviceIDSelected()
+        {
+            if (this.deviceIDSelector != null)
+            {
+                this.deviceID = this.deviceIDSelector.captionText.text;
+                //int selectionIndex = this.deviceIDSelector.value;
+                //this.deviceID = this.deviceIDSelector.options[selectionIndex].text;
+            }
+            
+            this.deviceIDText.text = this.deviceID;
+
+            // should already be created by now - if not, the deviceID
+            // will be applied as soon as the model manager creates the
+            // referential state object
+            if (this.digitalTwinModelState != null)
+            {
+                this.digitalTwinModelState.SetConnectedDeviceID(this.deviceID);
+            }
+
+            // update connection state - by the time we process the device ID in this
+            // UI component, the target remote device may have already sent it's
+            // connection state update, so we need to check if the local cache
+            // has one we can process
+            this.UpdateConnectionState();
+        }
+
+        public void UpdateDeviceIDList()
+        {
+            if (this.deviceIDSelector != null)
+            {
+                List<string> deviceIDList = EventProcessor.GetInstance().GetAllKnownDeviceIDs();
+
+                if (deviceIDList != null && deviceIDList.Count > 0)
+                {
+                    this.deviceIDSelector.ClearOptions();
+                    this.deviceIDSelector.AddOptions(deviceIDList);
+                }
             }
         }
 
@@ -250,6 +305,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                     dtModelManager.CreateModelState(
                         this.modelType, (IDataContextEventListener)this, rawModelJson);
 
+                this.digitalTwinModelState.SetConnectedDeviceID(this.deviceID);
+
                 this.modelContentText.text = rawModelJson;
 
                 Debug.Log($"Created model state with URI {this.dtmiURI} and name {this.dtmiName}");
@@ -265,6 +322,26 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             if (this.statusPanel != null )
             {
                 this.hasStatusPanel = true;
+            }
+
+            if (this.deviceIDObject != null)
+            {
+                this.deviceIDText = this.deviceIDObject.GetComponent<TextMeshProUGUI>();
+            }
+
+            if (this.deviceIDSelectorObject != null)
+            {
+                this.deviceIDSelector = this.deviceIDSelectorObject.GetComponent<TMP_Dropdown>();
+
+                this.deviceIDSelector.onValueChanged.AddListener(
+                    delegate { this.OnDeviceIDSelected(); }
+                );
+
+                // fire the listener to set deviceID and sync label
+                //this.UpdateDeviceIDList();
+
+                //this.deviceIDSelector.Select();
+                //this.OnDeviceIDSelected();
             }
 
             if (this.statusPanelConnStateLabelObject != null)
@@ -300,6 +377,16 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
 
             // init buttons
+            if (this.refreshDeviceIDButtonObject != null)
+            {
+                this.refreshDeviceIDButton = this.refreshDeviceIDButtonObject.GetComponent<Button>();
+
+                if (this.refreshDeviceIDButton != null)
+                {
+                    this.refreshDeviceIDButton.onClick.AddListener(() => this.UpdateDeviceIDList());
+                }
+            }
+
             if (this.statusPanelCloseButtonObject != null)
             {
                 this.closeStatusPanelButton = this.statusPanelCloseButtonObject.GetComponent<Button>();
@@ -414,12 +501,18 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         {
             try
             {
-                this.dtmiURI  = ModelConst.CreateModelID(this.modelType, this.modelVersion);
-                this.dtmiName = ModelConst.GetNameFromDtmiURI(this.dtmiURI);
+                // set DTMI labels first
+                this.dtmiURI  = ModelNameUtil.CreateModelID(this.modelType, this.modelVersion);
+                this.dtmiName = ModelNameUtil.GetNameFromDtmiURI(this.dtmiURI);
 
+                // init controls second
                 this.InitStatusPanelControls();
                 this.InitModelPanelControls();
 
+                // update device ID list third
+                this.UpdateDeviceIDList();
+
+                // register for events fourth
                 base.RegisterForSystemStatusEvents((ISystemStatusEventListener) this);
             }
             catch (Exception ex)
@@ -454,7 +547,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         protected override void ProcessActuatorData(ActuatorData data)
         {
-            if (data != null)
+            if (this.IsMyMessage(data))
             {
                 String jsonData = DataUtil.ActuatorDataToJson(data);
             }
@@ -462,7 +555,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         protected override void ProcessConnectionStateData(ConnectionStateData data)
         {
-            if (data != null)
+            this.UpdateDeviceIDList();
+
+            if (this.IsMyMessage(data))
             {
                 String connStateMsg = "...";
 
@@ -477,7 +572,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         protected override void ProcessMessageData(MessageData data)
         {
-            if (data != null)
+            if (this.IsMyMessage(data))
             {
                 // nothing to do
             }
@@ -485,7 +580,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         protected override void ProcessSensorData(SensorData data)
         {
-            if (data != null)
+            if (this.IsMyMessage(data))
             {
                 // nothing to do
             }
@@ -493,9 +588,30 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         protected override void ProcessSystemPerformanceData(SystemPerformanceData data)
         {
-            if (data != null)
+            if (this.IsMyMessage(data))
             {
                 // nothing to do
+            }
+        }
+
+        // private methods
+
+        private bool IsMyMessage(IotDataContext data)
+        {
+            return (data != null && data.GetDeviceID().Equals(this.deviceID));
+        }
+
+        private void UpdateConnectionState()
+        {
+            ConnectionStateData connStateData = EventProcessor.GetInstance().GetConnectionState(this.deviceID);
+
+            if (connStateData != null)
+            {
+                this.OnMessagingSystemStatusUpdate(connStateData);
+            }
+            else
+            {
+                Debug.LogWarning($"No cached connection state for {this.deviceID}");
             }
         }
 

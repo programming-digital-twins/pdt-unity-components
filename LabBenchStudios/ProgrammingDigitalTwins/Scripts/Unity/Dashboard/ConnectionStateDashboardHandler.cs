@@ -205,9 +205,18 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 else connStateMsg = "Unknown";
 
                 if (this.connStateLog != null) this.connStateLog.text = connStateMsg;
+
                 if (this.connHostNameLog != null) this.connHostNameLog.text = data.GetHostName();
-                if (this.connMsgInLog != null) this.connMsgInLog.text = data.GetMessageInCount().ToString();
-                if (this.connMsgOutLog != null) this.connMsgOutLog.text = data.GetMessageOutCount().ToString();
+
+                if (data.GetMessageInCount() > 0)
+                {
+                    if (this.connMsgInLog != null) this.connMsgInLog.text = data.GetMessageInCount().ToString();
+                }
+
+                if (data.GetMessageOutCount() > 0)
+                {
+                    if (this.connMsgOutLog != null) this.connMsgOutLog.text = data.GetMessageOutCount().ToString();
+                }
             }
         }
 
