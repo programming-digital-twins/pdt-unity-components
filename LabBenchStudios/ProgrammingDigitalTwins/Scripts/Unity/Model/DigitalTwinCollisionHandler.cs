@@ -37,14 +37,21 @@ namespace LabBenchStudios.Pdt.Unity.Model
         [SerializeField]
         private GameObject digitalTwinDisplayMgr = null;
 
+        [SerializeField]
+        private bool fadeFast = true;
+
         private Canvas digitalTwinDisplayMgrCanvas = null;
         private CanvasGroup digitalTwinDisplayMgrCanvasGroup = null;
 
         private bool hasDisplayCanvas = false;
         private bool hasDisplayCanvasGroup = false;
 
-        private bool fadeInCanvasGroup = false;
-        private bool fadeOutCanvasGroup = false;
+        private bool fadeInCanvasGroup   = false;
+        private bool fadeOutCanvasGroup  = false;
+
+        private float fadeNormalMultiple = 1.0f;
+        private float fadeInMultiple     = 2.0f;
+        private float fadeOutMultiple    = 5.0f;
 
         private void Awake()
         {
@@ -111,22 +118,32 @@ namespace LabBenchStudios.Pdt.Unity.Model
                 if (this.fadeInCanvasGroup &&
                     this.digitalTwinDisplayMgrCanvasGroup.alpha < 1)
                 {
-                    this.digitalTwinDisplayMgrCanvasGroup.alpha += Time.deltaTime;
+                    float fadeMultiple =
+                        (this.fadeFast) ? this.fadeInMultiple : this.fadeNormalMultiple;
+
+                    this.digitalTwinDisplayMgrCanvasGroup.alpha +=
+                        (Time.deltaTime * fadeMultiple);
 
                     if (this.digitalTwinDisplayMgrCanvasGroup.alpha >= 1)
                     {
                         this.fadeInCanvasGroup = false;
+                        this.digitalTwinDisplayMgrCanvasGroup.alpha = 1;
                     }
                 }
 
                 if (this.fadeOutCanvasGroup &&
                     this.digitalTwinDisplayMgrCanvasGroup.alpha >= 0)
                 {
-                    this.digitalTwinDisplayMgrCanvasGroup.alpha -= Time.deltaTime;
+                    float fadeMultiple =
+                        (this.fadeFast) ? this.fadeOutMultiple : this.fadeNormalMultiple;
+
+                    this.digitalTwinDisplayMgrCanvasGroup.alpha -=
+                        (Time.deltaTime * fadeMultiple);
 
                     if (this.digitalTwinDisplayMgrCanvasGroup.alpha <= 0)
                     {
                         this.fadeOutCanvasGroup = false;
+                        this.digitalTwinDisplayMgrCanvasGroup.alpha = 0;
 
                         // fade out complete, so disable the canvas
                         // it will be re-enabled (with alpha == 0)

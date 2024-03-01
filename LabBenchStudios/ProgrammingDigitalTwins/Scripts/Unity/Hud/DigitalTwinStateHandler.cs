@@ -35,6 +35,7 @@ using LabBenchStudios.Pdt.Model;
 
 using LabBenchStudios.Pdt.Unity.Common;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 namespace LabBenchStudios.Pdt.Unity.Dashboard
 {
@@ -47,10 +48,13 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private ModelNameUtil.DtmiControllerEnum modelType = ModelNameUtil.DtmiControllerEnum.Custom;
 
         [SerializeField]
+        private bool useGuidInInstanceKey = false;
+
+        [SerializeField]
         private GameObject deviceIDObject = null;
 
         [SerializeField]
-        private GameObject refreshDeviceIDButtonObject = null;
+        private GameObject provisionDeviceTwinButtonObject = null;
 
         [SerializeField]
         private GameObject deviceIDSelectorObject = null;
@@ -128,7 +132,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         private Image statusPanelStateImage = null;
 
-        private Button refreshDeviceIDButton = null;
+        private Button provisionDeviceTwinButton = null;
+
         private Button startDeviceButton = null;
         private Button stopDeviceButton = null;
         private Button updateDeviceButton = null;
@@ -149,6 +154,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private string dtmiURI  = ModelNameUtil.IOT_MODEL_CONTEXT_MODEL_ID;
         private string dtmiName = ModelNameUtil.IOT_MODEL_CONTEXT_NAME;
         private string deviceID = ConfigConst.NOT_SET;
+        private string locationID = ConfigConst.NOT_SET;
 
         private DigitalTwinModelState digitalTwinModelState = null;
 
@@ -176,6 +182,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             if (this.deviceIDSelector != null)
             {
                 this.deviceID = this.deviceIDSelector.captionText.text;
+                this.locationID = this.deviceID;
                 //int selectionIndex = this.deviceIDSelector.value;
                 //this.deviceID = this.deviceIDSelector.options[selectionIndex].text;
             }
@@ -189,6 +196,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             {
                 this.digitalTwinModelState.SetConnectedDeviceID(this.deviceID);
             }
+
+            // allow the twin to be provisioned
+            if (this.provisionDeviceTwinButton != null) this.provisionDeviceTwinButton.interactable = true;
 
             // update connection state - by the time we process the device ID in this
             // UI component, the target remote device may have already sent it's
@@ -219,12 +229,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.modelPanel.SetActive(this.isModelPanelActive);
             }
         }
-
-        public void UpdateTwinProperties()
-        {
-            // TODO: implement this
-        }
-
+        
         public void StartPhysicalDevice()
         {
             // TODO: implement this
@@ -294,24 +299,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         public void OnModelUpdateEvent()
         {
-            EventProcessor eventProcessor = EventProcessor.GetInstance();
-            DigitalTwinModelManager dtModelManager = eventProcessor.GetDigitalTwinModelManager();
-
-            if (dtModelManager != null)
-            {
-                string rawModelJson = dtModelManager.GetRawModelJson(this.modelType);
-
-                this.digitalTwinModelState =
-                    dtModelManager.CreateModelState(
-                        this.modelType, (IDataContextEventListener)this, rawModelJson);
-
-                this.digitalTwinModelState.SetConnectedDeviceID(this.deviceID);
-
-                this.modelContentText.text = rawModelJson;
-
-                Debug.Log($"Created model state with URI {this.dtmiURI} and name {this.dtmiName}");
-                Debug.Log($"Raw DTDL JSON\n==========\n{rawModelJson}\n==========\n");
-            }
+            this.UpdateModelRawData();
         }
 
 
@@ -336,12 +324,6 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.deviceIDSelector.onValueChanged.AddListener(
                     delegate { this.OnDeviceIDSelected(); }
                 );
-
-                // fire the listener to set deviceID and sync label
-                //this.UpdateDeviceIDList();
-
-                //this.deviceIDSelector.Select();
-                //this.OnDeviceIDSelected();
             }
 
             if (this.statusPanelConnStateLabelObject != null)
@@ -377,13 +359,14 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
 
             // init buttons
-            if (this.refreshDeviceIDButtonObject != null)
+            if (this.provisionDeviceTwinButtonObject != null)
             {
-                this.refreshDeviceIDButton = this.refreshDeviceIDButtonObject.GetComponent<Button>();
+                this.provisionDeviceTwinButton = this.provisionDeviceTwinButtonObject.GetComponent<Button>();
 
-                if (this.refreshDeviceIDButton != null)
+                if (this.provisionDeviceTwinButton != null)
                 {
-                    this.refreshDeviceIDButton.onClick.AddListener(() => this.UpdateDeviceIDList());
+                    if (this.provisionDeviceTwinButton != null) this.provisionDeviceTwinButton.interactable = false;
+                    this.provisionDeviceTwinButton.onClick.AddListener(() => this.ProvisionModelState());
                 }
             }
 
@@ -495,6 +478,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                     this.showModelPanelButton.onClick.AddListener(() => this.UpdateModelPanelVisibility());
                 }
             }
+
+            // pull in any loaded DTDL data - this can be mapped via the
+            // pre-provisioned ID that maps to the DTMI for the asset
+            this.UpdateModelRawData();
         }
 
         protected override void InitMessageHandler()
@@ -601,9 +588,34 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             return (data != null && data.GetDeviceID().Equals(this.deviceID));
         }
 
+        private void ProvisionModelState()
+        {
+            DigitalTwinModelManager dtModelManager =
+                EventProcessor.GetInstance().GetDigitalTwinModelManager();
+
+            if (dtModelManager != null)
+            {
+                Debug.LogError($"NORMAL: Provisioning device instance with URI {this.dtmiURI} and name {this.dtmiName}");
+                this.digitalTwinModelState =
+                    dtModelManager.CreateModelState(
+                        this.deviceID, this.locationID,
+                        this.useGuidInInstanceKey,
+                        this.modelType, (IDataContextEventListener) this);
+
+                this.OnModelUpdateEvent();
+
+                Debug.LogError($"NORMAL: Created model state with URI {this.dtmiURI} and instance {this.digitalTwinModelState.GetInstanceKey()}");
+                Debug.LogError($"NORMAL: Raw DTDL JSON\n==========\n{this.digitalTwinModelState.GetRawModelJson()}\n==========\n");
+
+                // once provisioned, we're done with the provisioning button
+                if (this.provisionDeviceTwinButton != null) this.provisionDeviceTwinButton.interactable = false;
+            }
+        }
+
         private void UpdateConnectionState()
         {
-            ConnectionStateData connStateData = EventProcessor.GetInstance().GetConnectionState(this.deviceID);
+            ConnectionStateData connStateData =
+                EventProcessor.GetInstance().GetConnectionState(this.deviceID);
 
             if (connStateData != null)
             {
@@ -613,6 +625,37 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             {
                 Debug.LogWarning($"No cached connection state for {this.deviceID}");
             }
+        }
+
+        private void UpdateModelRawData()
+        {
+            // it's possible the model state object hasn't
+            // been provisioned yet
+            Debug.LogError("NORMAL: Updating JSON raw model data...");
+
+            if (this.digitalTwinModelState != null)
+            {
+                this.digitalTwinModelState.ReloadModelData();
+
+                if (this.modelContentText != null)
+                {
+                    this.modelContentText.text =
+                        this.digitalTwinModelState.GetRawModelJson();
+                }
+            }
+            else
+            {
+                if (this.modelContentText != null)
+                {
+                    this.modelContentText.text =
+                        EventProcessor.GetInstance().GetDigitalTwinModelManager().GetRawModelJson(this.modelType);
+                }
+            }
+        }
+
+        private void UpdateTwinProperties()
+        {
+
         }
 
     }

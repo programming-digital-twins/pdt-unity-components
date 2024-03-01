@@ -39,6 +39,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
     public class StateManagementHudHandler : BaseAsyncDataMessageProcessor, ISystemStatusEventListener
     {
         [SerializeField]
+        private bool loadModelsAutomatically = true;
+
+        [SerializeField]
         private GameObject liveDataStatusDisplay = null;
 
         [SerializeField]
@@ -99,8 +102,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                     enable = false;
                 }
 
-                EventProcessor eventProcessor = EventProcessor.GetInstance();
-                eventProcessor.ProcessLiveDataFeedEngageRequest(enable);
+                EventProcessor.GetInstance().ProcessLiveDataFeedEngageRequest(enable);
 
                 this.isLiveDataEngaged = enable;
             }
@@ -125,57 +127,30 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                     enable = false;
                 }
 
-                EventProcessor eventProcessor = EventProcessor.GetInstance();
-                eventProcessor.ProcessSimulatedDataFeedEngageRequest(enable);
+                EventProcessor.GetInstance().ProcessSimulatedDataFeedEngageRequest(enable);
 
                 this.isSimDataEngaged = enable;
             }
         }
 
-        public void InitializeAndLoadModelData()
+        public void LoadModelData()
         {
             try
             {
-                Debug.Log($"Attempting to init and load DTDL model data: {this.dtdlModelPath}");
+                Debug.LogError($"NORMAL: Attempting to init and (re)load DTDL model data: {this.dtdlModelPath}");
 
-                EventProcessor eventProcessor = EventProcessor.GetInstance();
-                DigitalTwinModelManager dtModelManager = eventProcessor.GetDigitalTwinModelManager();
+                this.modelDataLoadStatusText.text = "(Re)loading model data...";
 
-                if (dtModelManager == null)
+                if (EventProcessor.GetInstance().LoadDigitalTwinModels(this.dtdlModelPath))
                 {
-                    Debug.Log("Creating DT Model Manager and registering with EventProcessor...");
-
-                    this.modelDataLoadStatusText.text = "Loading model data...";
-
-                    dtModelManager = new DigitalTwinModelManager(this.dtdlModelPath);
-                    eventProcessor.RegisterDigitalTwinModelManager(dtModelManager);
-
-                    if (dtModelManager.HasSuccessfulDataLoad())
-                    {
-                        eventProcessor.OnModelUpdateEvent();
-
-                        Debug.Log($"Loaded DTDL model data: {this.dtdlModelPath}");
-                        this.modelDataLoadStatusText.text = "Loaded model data.";
-                    }
-                    else
-                    {
-                        Debug.LogError($"Failed to load DTDL model data: {this.dtdlModelPath}");
-                        this.modelDataLoadStatusText.text = "Failed to load model data!";
-                    }
+                    Debug.LogError($"NORMAL: Successfully (re)loaded DTDL model data: {this.dtdlModelPath}");
+                    //EventProcessor.GetInstance().OnModelUpdateEvent();
+                    this.modelDataLoadStatusText.text = "Loaded model data.";
                 }
                 else
                 {
-                    this.modelDataLoadStatusText.text = "Reloading model data...";
-                    if (dtModelManager.ReloadDtdlModels(this.dtdlModelPath))
-                    {
-                        Debug.Log($"Reloaded DTDL model data: {this.dtdlModelPath}");
-                        this.modelDataLoadStatusText.text = "Reloaded model data.";
-                    }
-                    else
-                    {
-                        Debug.LogError($"Failed to reload DTDL model data: {this.dtdlModelPath}");
-                        this.modelDataLoadStatusText.text = "Failed to reload model data!";
-                    }
+                    Debug.LogError($"Failed to (re)load DTDL model data: {this.dtdlModelPath}");
+                    this.modelDataLoadStatusText.text = "Failed to load model data!";
                 }
             }
             catch (Exception e)
@@ -300,11 +275,16 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
                     if (this.loadModelDataButton != null)
                     {
-                        this.loadModelDataButton.onClick.AddListener(() => this.InitializeAndLoadModelData());
+                        this.loadModelDataButton.onClick.AddListener(() => this.LoadModelData());
                     }
                 }
 
                 base.RegisterForSystemStatusEvents((ISystemStatusEventListener) this);
+                
+                if (this.loadModelsAutomatically)
+                {
+                    this.LoadModelData();
+                }
             }
             catch (Exception ex)
             {
