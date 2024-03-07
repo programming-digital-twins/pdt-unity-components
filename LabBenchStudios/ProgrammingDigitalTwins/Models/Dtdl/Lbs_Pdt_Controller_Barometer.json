@@ -10,16 +10,32 @@
   "contents": [
     {
       "@type": [ "Property", "Pressure" ],
-      "name": "barometricPressureFloor",
-      "displayName": "Floor Value for Barometric Pressure Alert",
+      "name": "barometricPressureNominalFloor",
+      "displayName": "Nominal Floor Value for Barometric Pressure Alert",
       "writable": true,
       "schema": "float",
       "unit": "millibar"
     },
     {
       "@type": [ "Property", "Pressure" ],
-      "name": "barometricPressureCeiling",
-      "displayName": "Ceiling Value for Barometric Pressure Alert",
+      "name": "barometricPressureNominalCeiling",
+      "displayName": "Nominal Ceiling Value for Barometric Pressure Alert",
+      "writable": true,
+      "schema": "float",
+      "unit": "millibar"
+    },
+    {
+      "@type": [ "Property", "Pressure" ],
+      "name": "barometricPressureMaxFloor",
+      "displayName": "Max Floor Value for Barometric Pressure Alert",
+      "writable": true,
+      "schema": "float",
+      "unit": "millibar"
+    },
+    {
+      "@type": [ "Property", "Pressure" ],
+      "name": "barometricPressureMaxCeiling",
+      "displayName": "Max Ceiling Value for Barometric Pressure Alert",
       "writable": true,
       "schema": "float",
       "unit": "millibar"

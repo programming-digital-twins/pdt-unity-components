@@ -36,6 +36,7 @@ using LabBenchStudios.Pdt.Model;
 using LabBenchStudios.Pdt.Unity.Common;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using System.Text;
 
 namespace LabBenchStudios.Pdt.Unity.Dashboard
 {
@@ -45,7 +46,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private int modelVersion = 1;
 
         [SerializeField]
-        private ModelNameUtil.DtmiControllerEnum modelType = ModelNameUtil.DtmiControllerEnum.Custom;
+        private ModelNameUtil.DtmiControllerEnum controllerID = ModelNameUtil.DtmiControllerEnum.Custom;
 
         [SerializeField]
         private bool useGuidInInstanceKey = false;
@@ -99,7 +100,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private GameObject statusPanelStateImageObject = null;
 
         [SerializeField]
-        private GameObject statusPanelContentObject = null;
+        private GameObject statusPanelStateContentObject = null;
 
         [SerializeField]
         private GameObject statusPanelStopDeviceButtonObject = null;
@@ -121,6 +122,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private TMP_Text device = null;
         private TMP_Text statusPanelID = null;
         private TMP_Text statusPanelName = null;
+        private TMP_Text statusContentText = null;
+        private TMP_Text propsContentText = null;
         private TMP_Text modelDataLoadStatusText = null;
         private TMP_Text filePathEntryText = null;
 
@@ -151,10 +154,13 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private bool hasStatusPanelPropsContainer = false;
         private bool hasStatusPanelTelemetryContainer = false;
 
-        private string dtmiURI  = ModelNameUtil.IOT_MODEL_CONTEXT_MODEL_ID;
+        private string dtmiUri  = ModelNameUtil.IOT_MODEL_CONTEXT_MODEL_ID;
         private string dtmiName = ModelNameUtil.IOT_MODEL_CONTEXT_NAME;
         private string deviceID = ConfigConst.NOT_SET;
         private string locationID = ConfigConst.NOT_SET;
+
+        private string modelProps = "";
+        private string modelTelemetries = "";
 
         private DigitalTwinModelState digitalTwinModelState = null;
 
@@ -345,17 +351,21 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             if (this.statusPanelIDObject != null)
             {
                 this.statusPanelID = this.statusPanelIDObject.GetComponent<TextMeshProUGUI>();
-                this.statusPanelID.text = this.dtmiURI;
+                this.statusPanelID.text = this.dtmiUri;
             }
 
             if (this.statusPanelPropsContentObject != null)
             {
                 this.hasStatusPanelPropsContainer = true;
+
+                this.propsContentText = this.statusPanelPropsContentObject.GetComponent<TextMeshProUGUI>();
             }
 
-            if (this.statusPanelContentObject != null)
+            if (this.statusPanelStateContentObject != null)
             {
                 this.hasStatusPanelTelemetryContainer = true;
+
+                this.statusContentText = this.statusPanelStateContentObject.GetComponent<TextMeshProUGUI>();
             }
 
             // init buttons
@@ -448,7 +458,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             if (this.modelPanelIDObject != null)
             {
                 this.modelPanelID = this.modelPanelIDObject.GetComponent<TextMeshProUGUI>();
-                this.modelPanelID.text = this.dtmiURI;
+                this.modelPanelID.text = this.dtmiUri;
             }
 
             if (this.modelPanelContentObject != null)
@@ -489,8 +499,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             try
             {
                 // set DTMI labels first
-                this.dtmiURI  = ModelNameUtil.CreateModelID(this.modelType, this.modelVersion);
-                this.dtmiName = ModelNameUtil.GetNameFromDtmiURI(this.dtmiURI);
+                this.dtmiUri  = ModelNameUtil.CreateModelID(this.controllerID, this.modelVersion);
+                this.dtmiName = ModelNameUtil.GetNameFromDtmiURI(this.dtmiUri);
 
                 // init controls second
                 this.InitStatusPanelControls();
@@ -569,7 +579,17 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         {
             if (this.IsMyMessage(data))
             {
-                // nothing to do
+                StringBuilder sb = new StringBuilder(this.modelTelemetries);
+
+                sb.Append("\n==========");
+                sb.Append($"\nSensor Name: {data.GetName()}");
+                sb.Append($"\nSensor Value: {data.GetValue()}");
+                sb.Append("\n==========");
+                sb.Append($"\nIncoming Key: {ModelNameUtil.GenerateDataSyncKey(data)}");
+                sb.Append($"\nData Sync Key: {this.digitalTwinModelState.GetDataSyncKey()}");
+                sb.Append($"\nModel Sync Key: {this.digitalTwinModelState.GetModelSyncKey()}");
+
+                this.statusContentText.text = sb.ToString();
             }
         }
 
@@ -577,7 +597,14 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         {
             if (this.IsMyMessage(data))
             {
-                // nothing to do
+                StringBuilder sb = new StringBuilder(this.modelTelemetries);
+
+                sb.Append("\n==========");
+                sb.Append($"\nCPU Util: {data.GetCpuUtilization()}");
+                sb.Append($"\nMem Util: {data.GetMemoryUtilization()}");
+                sb.Append($"\nDisk Util: {data.GetDiskUtilization()}");
+
+                this.statusContentText.text = sb.ToString();
             }
         }
 
@@ -585,7 +612,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         private bool IsMyMessage(IotDataContext data)
         {
-            return (data != null && data.GetDeviceID().Equals(this.deviceID));
+            return true;
+            //return (data != null && data.GetDeviceID().Equals(this.deviceID));
         }
 
         private void ProvisionModelState()
@@ -595,16 +623,18 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
             if (dtModelManager != null)
             {
-                Debug.LogError($"NORMAL: Provisioning device instance with URI {this.dtmiURI} and name {this.dtmiName}");
+                Debug.LogError($"NORMAL: Provisioning device instance with URI {this.dtmiUri} and name {this.dtmiName}");
                 this.digitalTwinModelState =
                     dtModelManager.CreateModelState(
-                        this.deviceID, this.locationID,
+                        this.deviceID,
+                        this.locationID,
                         this.useGuidInInstanceKey,
-                        this.modelType, (IDataContextEventListener) this);
+                        this.controllerID,
+                        (IDataContextEventListener) this);
 
                 this.OnModelUpdateEvent();
 
-                Debug.LogError($"NORMAL: Created model state with URI {this.dtmiURI} and instance {this.digitalTwinModelState.GetInstanceKey()}");
+                Debug.LogError($"NORMAL: Created model state with URI {this.dtmiUri} and instance {this.digitalTwinModelState.GetModelSyncKey()}");
                 Debug.LogError($"NORMAL: Raw DTDL JSON\n==========\n{this.digitalTwinModelState.GetRawModelJson()}\n==========\n");
 
                 // once provisioned, we're done with the provisioning button
@@ -635,20 +665,48 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
             if (this.digitalTwinModelState != null)
             {
-                this.digitalTwinModelState.ReloadModelData();
+                this.digitalTwinModelState.BuildModelData();
 
                 if (this.modelContentText != null)
                 {
                     this.modelContentText.text =
                         this.digitalTwinModelState.GetRawModelJson();
                 }
+
+                List<string> propKeys = this.digitalTwinModelState.GetModelPropertyKeys();
+                StringBuilder propKeysStr = new StringBuilder();
+
+                foreach (string key in propKeys)
+                {
+                    propKeysStr.Append(key).Append("\n");
+                }
+
+                this.modelProps = propKeysStr.ToString();
+                this.propsContentText.text = this.modelProps;
+
+                Debug.LogError(
+                    $"Property Keys for {this.digitalTwinModelState.GetModelSyncKey()}:\n{this.propsContentText.text}");
+
+                List<string> telemetryKeys = this.digitalTwinModelState.GetModelPropertyTelemetryKeys();
+                StringBuilder telemetryKeysStr = new StringBuilder();
+
+                foreach (string key in telemetryKeys)
+                {
+                    telemetryKeysStr.Append(key).Append("\n");
+                }
+
+                this.modelTelemetries = telemetryKeysStr.ToString();
+                this.statusContentText.text = this.modelTelemetries;
+
+                Debug.LogError(
+                    $"Telemetry Keys for {this.digitalTwinModelState.GetModelSyncKey()}:\n{this.statusContentText.text}");
             }
             else
             {
                 if (this.modelContentText != null)
                 {
                     this.modelContentText.text =
-                        EventProcessor.GetInstance().GetDigitalTwinModelManager().GetRawModelJson(this.modelType);
+                        EventProcessor.GetInstance().GetDigitalTwinModelManager().GetRawModelJson(this.controllerID);
                 }
             }
         }

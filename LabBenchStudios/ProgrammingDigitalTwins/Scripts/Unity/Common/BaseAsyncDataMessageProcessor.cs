@@ -38,6 +38,9 @@ namespace LabBenchStudios.Pdt.Unity.Common
     public abstract class BaseAsyncDataMessageProcessor : MonoBehaviour, IDataContextEventListener
     {
         [SerializeField]
+        private Boolean registerForDataCallbacks = true;
+
+        [SerializeField]
         private Boolean enableDebugLogProcessing = false;
 
         [SerializeField]
@@ -110,7 +113,11 @@ namespace LabBenchStudios.Pdt.Unity.Common
             }
 
             this.eventProcessor = EventProcessor.GetInstance();
-            this.eventProcessor.RegisterListener((IDataContextEventListener) this);
+
+            if (this.registerForDataCallbacks)
+            {
+                this.eventProcessor.RegisterListener((IDataContextEventListener)this);
+            }
 
             this.InitMessageHandler();
             this.isInitialized = true;

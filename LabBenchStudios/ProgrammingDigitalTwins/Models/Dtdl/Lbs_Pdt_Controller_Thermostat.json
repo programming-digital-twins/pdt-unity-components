@@ -18,16 +18,32 @@
     },
     {
       "@type": [ "Property", "Temperature" ],
-      "name": "minTemperature",
-      "displayName": "Min Temperature Setting in Celsuis",
+      "name": "minNominalTemperature",
+      "displayName": "Min Nominal temperature Setting in Celsuis",
       "writable": true,
       "schema": "float",
       "unit": "degreeCelsius"
     },
     {
       "@type": [ "Property", "Temperature" ],
-      "name": "maxTemperature",
-      "displayName": "Max Temperature Setting in Celsuis",
+      "name": "maxNominalTemperature",
+      "displayName": "Max Nominal Temperature Setting in Celsuis",
+      "writable": true,
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
+      "@type": [ "Property", "Temperature" ],
+      "name": "minThresholdTemperature",
+      "displayName": "Min Threshold Temperature Setting in Celsuis",
+      "writable": true,
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
+      "@type": [ "Property", "Temperature" ],
+      "name": "maxThresholdTemperature",
+      "displayName": "Max Threshold Temperature Setting in Celsuis",
       "writable": true,
       "schema": "float",
       "unit": "degreeCelsius"

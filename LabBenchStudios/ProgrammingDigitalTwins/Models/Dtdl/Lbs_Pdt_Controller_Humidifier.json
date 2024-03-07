@@ -17,16 +17,32 @@
     },
     {
       "@type": [ "Property", "RelativeHumidity" ],
-      "name": "minHumidity",
-      "displayName": "Min Humidity Setting in Percent",
+      "name": "minNominalHumidity",
+      "displayName": "Min Nominal Humidity Setting in Percent",
       "writable": true,
       "schema": "float",
       "unit": "percent"
     },
     {
       "@type": [ "Property", "RelativeHumidity" ],
-      "name": "maxHumidity",
-      "displayName": "Max Humidity Setting in Percent",
+      "name": "maxNominalHumidity",
+      "displayName": "Max Nominal Humidity Setting in Percent",
+      "writable": true,
+      "schema": "float",
+      "unit": "percent"
+    },
+    {
+      "@type": [ "Property", "RelativeHumidity" ],
+      "name": "minThresholdHumidity",
+      "displayName": "Min Threshold Humidity Setting in Percent",
+      "writable": true,
+      "schema": "float",
+      "unit": "percent"
+    },
+    {
+      "@type": [ "Property", "RelativeHumidity" ],
+      "name": "maxThresholdHumidity",
+      "displayName": "Max Threshold Humidity Setting in Percent",
       "writable": true,
       "schema": "float",
       "unit": "percent"

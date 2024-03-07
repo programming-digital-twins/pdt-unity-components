@@ -22,6 +22,73 @@
       "unit": "volt"
     },
     {
+      "@type": [ "Property", "Pressure" ],
+      "name": "tankPressureNominalFloor",
+      "displayName": "Nominal Floor Value for Tank Pressure Alert",
+      "writable": true,
+      "schema": "float",
+      "unit": "poundPerSquareInch"
+    },
+    {
+      "@type": [ "Property", "Pressure" ],
+      "name": "tankPressureNominalCeiling",
+      "displayName": "Nominal Ceiling Value for Tank Pressure Alert",
+      "writable": true,
+      "schema": "float",
+      "unit": "poundPerSquareInch"
+    },
+    {
+      "@type": [ "Property", "Pressure" ],
+      "name": "tankPressureMaxFloor",
+      "displayName": "Max Floor Value for Tank Pressure Alert",
+      "writable": true,
+      "schema": "float",
+      "unit": "poundPerSquareInch"
+    },
+    {
+      "@type": [ "Property", "Pressure" ],
+      "name": "tankPressureMaxCeiling",
+      "displayName": "Max Ceiling Value for Tank Pressure Alert",
+      "writable": true,
+      "schema": "float",
+      "unit": "poundPerSquareInch"
+    },
+    {
+      "@type": [ "Property", "Temperature" ],
+      "name": "tankTargetTemperature",
+      "displayName": "Target Tank Temperature in Celsius",
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
+      "@type": [ "Property", "Temperature" ],
+      "name": "tankNominalMinTemperature",
+      "displayName": "Nominal Min Tank Temperature in Celsius",
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
+      "@type": [ "Property", "Temperature" ],
+      "name": "tankThresholdMinTemperature",
+      "displayName": "Threshold Min Tank Temperature in Celsius",
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
+      "@type": [ "Property", "Temperature" ],
+      "name": "tankNominalMaxTemperature",
+      "displayName": "Nominal Max Tank Temperature in Celsius",
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
+      "@type": [ "Property", "Temperature" ],
+      "name": "tankThresholdMaxTemperature",
+      "displayName": "Threshold Max Tank Temperature in Celsius",
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
       "@type": [ "Telemetry", "EnergyRate" ],
       "name": "powerDraw",
       "displayName": "Power Draw in Watts",
