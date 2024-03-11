@@ -120,6 +120,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         [SerializeField]
         private GameObject statusPanelCloseButtonObject = null;
 
+        [SerializeField]
+        private GameObject dataListenerContainer = null;
+
         private TMP_Text connStateLabelText = null;
         private TMP_Text deviceIDText = null;
         private TMP_Text deviceCmdResourceText = null;
@@ -172,6 +175,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private DigitalTwinModelState digitalTwinModelState = null;
 
         private ResourceNameContainer cmdResource = null;
+
+        private IDataContextEventListener dataListener = null;
 
 
         // public methods (button interactions)
@@ -443,6 +448,21 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.statusContentText = this.statusPanelStateContentObject.GetComponent<TextMeshProUGUI>();
             }
 
+            if (this.dataListenerContainer != null)
+            {
+                try
+                {
+                    this.dataListener = this.dataListenerContainer.GetComponent<IDataContextEventListener>();
+                }
+                catch (Exception e)
+                {
+                    this.dataListener = null;
+
+                    Debug.LogError(
+                        "Can't find IDataContextEventListener reference in data listener container GameObject. Ignoring.");
+                }
+            }
+
             // init buttons
             if (this.provisionDeviceTwinButtonObject != null)
             {
@@ -649,6 +669,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             if (this.IsMyMessage(data))
             {
                 String jsonData = DataUtil.ActuatorDataToJson(data);
+
+                if (this.dataListener != null)
+                {
+                    this.dataListener.HandleActuatorData(data);
+                }
             }
         }
 
@@ -670,6 +695,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 else connStateMsg = "Unknown";
 
                 if (this.connStateLabelText != null) this.connStateLabelText.text = connStateMsg;
+
+                if (this.dataListener != null)
+                {
+                    this.dataListener.HandleConnectionStateData(data);
+                }
             }
         }
 
@@ -682,6 +712,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             if (this.IsMyMessage(data))
             {
                 // nothing to do
+
+                if (this.dataListener != null)
+                {
+                    this.dataListener.HandleMessageData(data);
+                }
             }
         }
 
@@ -704,6 +739,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 sb.Append($"\nModel Sync Key: {this.digitalTwinModelState.GetModelSyncKey()}");
 
                 this.statusContentText.text = sb.ToString();
+
+                if (this.dataListener != null)
+                {
+                    this.dataListener.HandleSensorData(data);
+                }
             }
         }
 
@@ -723,6 +763,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 sb.Append($"\nDisk Util: {data.GetDiskUtilization()}");
 
                 this.statusContentText.text = sb.ToString();
+
+                if (this.dataListener != null)
+                {
+                    this.dataListener.HandleSystemPerformanceData(data);
+                }
             }
         }
 
