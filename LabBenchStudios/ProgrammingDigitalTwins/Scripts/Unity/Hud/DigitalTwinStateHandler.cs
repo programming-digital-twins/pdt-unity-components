@@ -121,7 +121,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private GameObject statusPanelCloseButtonObject = null;
 
         [SerializeField]
-        private GameObject dataListenerContainer = null;
+        private GameObject animationListenerContainer = null;
+
+        [SerializeField]
+        private GameObject eventListenerContainer = null;
 
         private TMP_Text connStateLabelText = null;
         private TMP_Text deviceIDText = null;
@@ -176,7 +179,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         private ResourceNameContainer cmdResource = null;
 
-        private IDataContextEventListener dataListener = null;
+        private IDataContextEventListener animationListener = null;
+        private IDataContextExtendedListener eventListener = null;
 
 
         // public methods (button interactions)
@@ -448,18 +452,33 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.statusContentText = this.statusPanelStateContentObject.GetComponent<TextMeshProUGUI>();
             }
 
-            if (this.dataListenerContainer != null)
+            if (this.animationListenerContainer != null)
             {
                 try
                 {
-                    this.dataListener = this.dataListenerContainer.GetComponent<IDataContextEventListener>();
+                    this.animationListener = this.animationListenerContainer.GetComponent<IDataContextEventListener>();
                 }
                 catch (Exception e)
                 {
-                    this.dataListener = null;
+                    this.animationListener = null;
 
                     Debug.LogError(
-                        "Can't find IDataContextEventListener reference in data listener container GameObject. Ignoring.");
+                        "Can't find IDataContextEventListener reference in animation listener container GameObject. Ignoring.");
+                }
+            }
+
+            if (this.eventListenerContainer != null)
+            {
+                try
+                {
+                    this.eventListener = this.eventListenerContainer.GetComponent<IDataContextExtendedListener>();
+                }
+                catch (Exception e)
+                {
+                    this.eventListener = null;
+
+                    Debug.LogError(
+                        "Can't find IDataContextExtendedListener reference in event listener container GameObject. Ignoring.");
                 }
             }
 
@@ -670,9 +689,14 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             {
                 String jsonData = DataUtil.ActuatorDataToJson(data);
 
-                if (this.dataListener != null)
+                if (this.animationListener != null)
                 {
-                    this.dataListener.HandleActuatorData(data);
+                    this.animationListener.HandleActuatorData(data);
+                }
+
+                if (this.eventListener != null)
+                {
+                    this.eventListener.HandleActuatorData(data);
                 }
             }
         }
@@ -696,9 +720,14 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
                 if (this.connStateLabelText != null) this.connStateLabelText.text = connStateMsg;
 
-                if (this.dataListener != null)
+                if (this.animationListener != null)
                 {
-                    this.dataListener.HandleConnectionStateData(data);
+                    this.animationListener.HandleConnectionStateData(data);
+                }
+
+                if (this.eventListener != null)
+                {
+                    this.eventListener.HandleConnectionStateData(data);
                 }
             }
         }
@@ -713,9 +742,14 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             {
                 // nothing to do
 
-                if (this.dataListener != null)
+                if (this.animationListener != null)
                 {
-                    this.dataListener.HandleMessageData(data);
+                    this.animationListener.HandleMessageData(data);
+                }
+
+                if (this.eventListener != null)
+                {
+                    this.eventListener.HandleMessageData(data);
                 }
             }
         }
@@ -740,9 +774,14 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
                 this.statusContentText.text = sb.ToString();
 
-                if (this.dataListener != null)
+                if (this.animationListener != null)
                 {
-                    this.dataListener.HandleSensorData(data);
+                    this.animationListener.HandleSensorData(data);
+                }
+
+                if (this.eventListener != null)
+                {
+                    this.eventListener.HandleSensorData(data);
                 }
             }
         }
@@ -764,9 +803,14 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
                 this.statusContentText.text = sb.ToString();
 
-                if (this.dataListener != null)
+                if (this.animationListener != null)
                 {
-                    this.dataListener.HandleSystemPerformanceData(data);
+                    this.animationListener.HandleSystemPerformanceData(data);
+                }
+
+                if (this.eventListener != null)
+                {
+                    this.eventListener.HandleSystemPerformanceData(data);
                 }
             }
         }
@@ -831,13 +875,18 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                             this.locationID,
                             this.useGuidInInstanceKey,
                             this.controllerID,
-                            (IDataContextEventListener)this);
+                            (IDataContextEventListener) this);
                 }
                 else
                 {
                     this.digitalTwinModelState.UpdateConnectionState(this.deviceID, this.locationID);
 
                     dtModelManager.UpdateModelState(this.digitalTwinModelState);
+                }
+
+                if (this.eventListener != null)
+                {
+                    this.eventListener.SetDigitalTwinStateProcessor(this.digitalTwinModelState);
                 }
 
                 this.OnModelUpdateEvent();
