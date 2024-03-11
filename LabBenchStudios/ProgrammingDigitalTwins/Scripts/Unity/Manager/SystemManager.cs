@@ -34,6 +34,9 @@ using System;
 
 namespace LabBenchStudios.Pdt.Unity.Manager
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SystemManager : MonoBehaviour, IRemoteStateProcessor
     {
         [SerializeField]
@@ -107,6 +110,11 @@ namespace LabBenchStudios.Pdt.Unity.Manager
         private Queue<ResourceNameContainer> remoteCmdDataQueue = null;
 
 
+        // internal
+
+        /// <summary>
+        /// 
+        /// </summary>
         void Awake()
         {
             DontDestroyOnLoad(gameObject);
@@ -120,10 +128,67 @@ namespace LabBenchStudios.Pdt.Unity.Manager
             this.isInitialized = true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void Start()
         {
             this.InitManager();
             this.StartManager();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void OnDestroy()
+        {
+            this.StopManager();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void Update()
+        {
+            // nothing to do
+        }
+
+        // public
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="resource"></param>
+        public void HandleRemoteCommandRequest(ResourceNameContainer resource)
+        {
+            if (resource != null)
+            {
+                // STEP 1: validate the request - ensure it's legit
+                // this simple validation just ensures it's an
+                // actuation command (ActuatorData instance)
+                bool isCmd = resource.IsActuationResource;
+
+                Debug.Log("Is Actuator Command? " + isCmd);
+
+                // STEP 2: Enqueue the request
+                if (isCmd) this.remoteCmdDataQueue.Enqueue(resource);
+
+                // STEP 3: Process the request (send to the IPubSubConnector)
+
+                // this is automatically handled in the ProcessRemoteCommands
+                // co-routine, invoked every this.delayBetweenRemoteCommands seconds
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void StartManager()
+        {
+            if (this.connectToMqttAsap)
+            {
+                this.EnableLiveDataFeed(true);
+            }
 
             if (this.allowRemoteCommandTriggers)
             {
@@ -146,51 +211,22 @@ namespace LabBenchStudios.Pdt.Unity.Manager
             }
         }
 
-        void OnDestroy()
-        {
-            this.StopManager();
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-            // nothing to do
-        }
-
-        public void HandleRemoteCommandRequest(ResourceNameContainer resource)
-        {
-            if (resource != null)
-            {
-                // STEP 1: validate the request - ensure it's legit
-                // this simple validation just ensures it's an
-                // actuation command (ActuatorData instance)
-                bool isCmd = resource.IsActuationResource;
-
-                Debug.Log("Is Actuator Command? " + isCmd);
-
-                // STEP 2: Enqueue the request
-                if (isCmd) this.remoteCmdDataQueue.Enqueue(resource);
-
-                // STEP 3: Process the request (send to the IPubSubConnector)
-                // this is automatically handled in the ProcessRemoteCommands
-                // co-routine, invoked every this.delayBetweenRemoteCommands seconds
-            }
-        }
-
-        public void StartManager()
-        {
-            if (this.connectToMqttAsap)
-            {
-                this.EnableLiveDataFeed(true);
-            }
-        }
-
+        /// <summary>
+        /// 
+        /// </summary>
         public void StopManager()
         {
             this.EnableLiveDataFeed(false);
             this.EnableSimulatedDataFeed(false);
+
+            // cancel all InvokeRepeating calls
+            CancelInvoke();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="enable"></param>
         public void EnableLiveDataFeed(bool enable)
         {
             if (enable)
@@ -223,6 +259,10 @@ namespace LabBenchStudios.Pdt.Unity.Manager
             this.EnableIncomingVirtualThingUpdates(enable);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="enable"></param>
         public void EnableSimulatedDataFeed(bool enable)
         {
             if (enable)
@@ -233,16 +273,29 @@ namespace LabBenchStudios.Pdt.Unity.Manager
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="enable"></param>
         public void EnableIncomingVirtualThingUpdates(bool enable)
         {
             // TODO: implement this
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="enable"></param>
         public void EnableOutoingPhysicalThingUpdates(bool enable)
         {
             // TODO: implement this
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public bool SendStateUpdateToPhysicalThing(ResourceNameContainer resource)
         {
             if (resource != null)
@@ -257,6 +310,9 @@ namespace LabBenchStudios.Pdt.Unity.Manager
 
         // private
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void CheckMessagingConnection()
         {
             if (this.mqttClient != null)
@@ -285,6 +341,9 @@ namespace LabBenchStudios.Pdt.Unity.Manager
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void AddSampleRemoteCommandToQueue()
         {
             // TODO: this is a simplistic way to pass data
@@ -311,6 +370,12 @@ namespace LabBenchStudios.Pdt.Unity.Manager
             this.HandleRemoteCommandRequest(resource);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         private float GenerateRandomTestFloat(float min, float max)
         {
             System.Random rnd = new System.Random();
@@ -323,15 +388,22 @@ namespace LabBenchStudios.Pdt.Unity.Manager
             return (float) rndVal;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void ProcessRemoteCommands()
         {
-            Debug.Log("Checking if remote command available to send to device(s)...");
+            Debug.Log("Checking if remote command available to send to deviceName(s)...");
 
             ResourceNameContainer resource = this.GetRemoteCommandFromQueue();
 
             this.SendStateUpdateToPhysicalThing(resource);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private ResourceNameContainer GetRemoteCommandFromQueue()
         {
             if (this.remoteCmdDataQueue.Count > 0)
@@ -342,6 +414,9 @@ namespace LabBenchStudios.Pdt.Unity.Manager
             return null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void InitManager()
         {
             string msg = "System manager initializing...";

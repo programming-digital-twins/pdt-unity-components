@@ -83,6 +83,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         // public methods (button interactions)
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="enable"></param>
         public void StartLiveDataFeed(bool enable)
         {
             if (this.startLiveDataFeedButton != null)
@@ -108,6 +112,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="enable"></param>
         public void StartSimDataFeed(bool enable)
         {
             if (this.startSimDataFeedButton != null)
@@ -133,18 +141,20 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void LoadModelData()
         {
             try
             {
-                Debug.LogError($"NORMAL: Attempting to init and (re)load DTDL model data: {this.dtdlModelPath}");
+                Debug.Log($"NORMAL: Attempting to init and (re)load DTDL model data: {this.dtdlModelPath}");
 
                 this.modelDataLoadStatusText.text = "(Re)loading model data...";
 
                 if (EventProcessor.GetInstance().LoadDigitalTwinModels(this.dtdlModelPath))
                 {
-                    Debug.LogError($"NORMAL: Successfully (re)loaded DTDL model data: {this.dtdlModelPath}");
-                    //EventProcessor.GetInstance().OnModelUpdateEvent();
+                    Debug.Log($"NORMAL: Successfully (re)loaded DTDL model data: {this.dtdlModelPath}");
                     this.modelDataLoadStatusText.text = "Loaded model data.";
                 }
                 else
@@ -158,7 +168,6 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.modelDataLoadStatusText.text = "Failed to load model data.";
                 Debug.LogError($"Failed to load DTDL files from {this.dtdlModelPath}");
             }
-                
         }
 
         // public callback methods
@@ -208,6 +217,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             base.HandleConnectionStateData(data);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void OnModelUpdateEvent()
         {
             // nothing to do
@@ -216,6 +228,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         // protected
 
+        /// <summary>
+        /// 
+        /// </summary>
         protected override void InitMessageHandler()
         {
             try
@@ -292,6 +307,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
         protected new void ProcessDebugLogMessage(string message)
         {
             if (message != null)
@@ -300,6 +319,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
         protected new void ProcessWarningLogMessage(string message)
         {
             if (message != null)
@@ -308,6 +331,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
         protected new void ProcessErrorLogMessage(string message)
         {
             if (message != null)
@@ -316,6 +343,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
         protected override void ProcessActuatorData(ActuatorData data)
         {
             if (data != null)
@@ -324,6 +355,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
         protected override void ProcessConnectionStateData(ConnectionStateData data)
         {
             if (data != null)
@@ -339,6 +374,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
         protected override void ProcessMessageData(MessageData data)
         {
             if (data != null)
@@ -347,6 +386,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
         protected override void ProcessSensorData(SensorData data)
         {
             if (data != null)
@@ -355,6 +398,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
         protected override void ProcessSystemPerformanceData(SystemPerformanceData data)
         {
             if (data != null)

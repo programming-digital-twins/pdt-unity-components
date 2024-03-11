@@ -151,27 +151,37 @@ namespace LabBenchStudios.Pdt.Unity.Common
 
             if (this.enableActuatorDataProcessing)
             {
-                this.ProcessActuatorData(this.GetActuatorDataFromQueue());
+                ActuatorData data = this.GetActuatorDataFromQueue();
+
+                if (data != null) { this.ProcessActuatorData(data); }
             }
 
             if (this.enableConnectionStateDataProcessing)
             {
-                this.ProcessConnectionStateData(this.GetConnectionStateDataFromQueue());
+                ConnectionStateData data = this.GetConnectionStateDataFromQueue();
+
+                if (data != null) { this.ProcessConnectionStateData(data); }
             }
 
             if (this.enableMessageDataProcessing)
             {
-                this.ProcessMessageData(this.GetMessageDataFromQueue());
+                MessageData data = this.GetMessageDataFromQueue();
+
+                if (data != null) { this.ProcessMessageData(data); }
             }
 
             if (this.enableSensorDataProcessing)
             {
-                this.ProcessSensorData(this.GetSensorDataFromQueue());
+                SensorData data = this.GetSensorDataFromQueue();
+
+                if (data != null) { this.ProcessSensorData(data); }
             }
 
             if (this.enableSystemPerformanceDataProcessing)
             {
-                this.ProcessSystemPerformanceData(this.GetSystemPerformanceDataFromQueue());
+                SystemPerformanceData data = this.GetSystemPerformanceDataFromQueue();
+
+                if (data != null) { this.ProcessSystemPerformanceData(data); }
             }
         }
 

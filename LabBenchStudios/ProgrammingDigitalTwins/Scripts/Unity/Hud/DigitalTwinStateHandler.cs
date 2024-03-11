@@ -94,6 +94,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private GameObject statusPanelIDObject = null;
 
         [SerializeField]
+        private GameObject statusPanelCommandResourceObject = null;
+
+        [SerializeField]
         private GameObject statusPanelConnStateLabelObject = null;
 
         [SerializeField]
@@ -119,7 +122,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         private TMP_Text connStateLabelText = null;
         private TMP_Text deviceIDText = null;
-        private TMP_Text device = null;
+        private TMP_Text deviceCmdResourceText = null;
+        private TMP_Text deviceName = null;
         private TMP_Text statusPanelID = null;
         private TMP_Text statusPanelName = null;
         private TMP_Text statusContentText = null;
@@ -159,14 +163,22 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private string deviceID = ConfigConst.NOT_SET;
         private string locationID = ConfigConst.NOT_SET;
 
+        private string cmdResourceName =
+            ConfigConst.PRODUCT_NAME + "/" + ConfigConst.EDGE_DEVICE + "/" + ConfigConst.ACTUATOR_CMD;
+
         private string modelProps = "";
         private string modelTelemetries = "";
 
         private DigitalTwinModelState digitalTwinModelState = null;
 
+        private ResourceNameContainer cmdResource = null;
+
 
         // public methods (button interactions)
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void CloseStatusPanel()
         {
             if (this.hasStatusPanel)
@@ -175,6 +187,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void CloseModelPanel()
         {
             if (this.hasModelPanel)
@@ -183,14 +198,15 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void OnDeviceIDSelected()
         {
             if (this.deviceIDSelector != null)
             {
                 this.deviceID = this.deviceIDSelector.captionText.text;
                 this.locationID = this.deviceID;
-                //int selectionIndex = this.deviceIDSelector.value;
-                //this.deviceID = this.deviceIDSelector.options[selectionIndex].text;
             }
             
             this.deviceIDText.text = this.deviceID;
@@ -206,13 +222,17 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             // allow the twin to be provisioned
             if (this.provisionDeviceTwinButton != null) this.provisionDeviceTwinButton.interactable = true;
 
-            // update connection state - by the time we process the device ID in this
-            // UI component, the target remote device may have already sent it's
+            // update connection state - by the time we process the deviceName ID in this
+            // UI component, the target remote deviceName may have already sent it's
             // connection state update, so we need to check if the local cache
             // has one we can process
             this.UpdateConnectionState();
+            this.UpdateCommandResourceName();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void UpdateDeviceIDList()
         {
             if (this.deviceIDSelector != null)
@@ -227,6 +247,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void UpdateModelPanelVisibility()
         {
             if (this.hasModelPanel)
@@ -236,21 +259,62 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
         
+        /// <summary>
+        /// 
+        /// </summary>
         public void StartPhysicalDevice()
         {
             // TODO: implement this
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void StopPhysicalDevice()
         {
             // TODO: implement this
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void UpdatePhysicalDevice()
         {
-            // TODO: implement this
+            // first: set the command resource name text
+            //        this is automatically set initially, but the user can
+            //        manually override (eventually - future update), so check
+            //        the current value and apply it to the locally stored
+            //        cmdResourceName string
+            if (this.deviceCmdResourceText != null)
+            {
+                this.cmdResourceName = this.deviceCmdResourceText.text;
+            }
+
+            // second: generate the commands to be send the target physical device
+            //         this will take any writeable properties and convert any
+            //         deltas (from any recent change) into ActuatorData instances
+            //         for (eventual) transmission to the target physical device;
+            //         for each ActuatorData instance, a ResourceNameContainer will
+            //         be created with the cmdResourceName as the target resource and
+            //         the ActuatorData as the IotDataContext instance
+            List<ResourceNameContainer> deviceCmdResourceList = this.GenerateDeviceCommands();
+
+            // third: send each generated ResourceNameContainer on its way
+            //        this will iterate over the device command list and send each
+            //        one to the target physical device;
+            //        a future update may permit all to be sent in one message
+            if (deviceCmdResourceList != null)
+            {
+                foreach (ResourceNameContainer resource in deviceCmdResourceList)
+                {
+                    EventProcessor.GetInstance().ProcessStateUpdateToPhysicalThing(resource);
+                }
+            }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void PauseDeviceTelemetry()
         {
             // TODO: implement this
@@ -303,14 +367,20 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             base.HandleConnectionStateData(data);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void OnModelUpdateEvent()
         {
-            this.UpdateModelRawData();
+            this.UpdateModelDataAndProperties();
         }
 
 
         // protected
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void InitStatusPanelControls()
         {
             if (this.statusPanel != null )
@@ -330,6 +400,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.deviceIDSelector.onValueChanged.AddListener(
                     delegate { this.OnDeviceIDSelected(); }
                 );
+            }
+
+            if (this.statusPanelCommandResourceObject != null)
+            {
+                this.deviceCmdResourceText = this.statusPanelCommandResourceObject.GetComponent<TextMeshProUGUI>();
             }
 
             if (this.statusPanelConnStateLabelObject != null)
@@ -441,6 +516,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void InitModelPanelControls()
         {
             if (this.modelPanel != null)
@@ -491,25 +569,33 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
             // pull in any loaded DTDL data - this can be mapped via the
             // pre-provisioned ID that maps to the DTMI for the asset
-            this.UpdateModelRawData();
+            this.UpdateModelDataAndProperties();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         protected override void InitMessageHandler()
         {
             try
             {
-                // set DTMI labels first
+                // first: set DTMI labels
                 this.dtmiUri  = ModelNameUtil.CreateModelID(this.controllerID, this.modelVersion);
                 this.dtmiName = ModelNameUtil.GetNameFromDtmiURI(this.dtmiUri);
 
-                // init controls second
+                // second: init controls
                 this.InitStatusPanelControls();
                 this.InitModelPanelControls();
 
-                // update device ID list third
+                // third: update deviceName ID list
                 this.UpdateDeviceIDList();
 
-                // register for events fourth
+                // fourth: update the command resource name
+                this.UpdateCommandResourceName();
+
+                // fifth: other init steps (if needed - future)
+
+                // finally: register for events
                 base.RegisterForSystemStatusEvents((ISystemStatusEventListener) this);
             }
             catch (Exception ex)
@@ -518,6 +604,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
         protected new void ProcessDebugLogMessage(string message)
         {
             if (message != null)
@@ -526,6 +616,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
         protected new void ProcessWarningLogMessage(string message)
         {
             if (message != null)
@@ -534,6 +628,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
         protected new void ProcessErrorLogMessage(string message)
         {
             if (message != null)
@@ -542,6 +640,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
         protected override void ProcessActuatorData(ActuatorData data)
         {
             if (this.IsMyMessage(data))
@@ -550,6 +652,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
         protected override void ProcessConnectionStateData(ConnectionStateData data)
         {
             this.UpdateDeviceIDList();
@@ -567,6 +673,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
         protected override void ProcessMessageData(MessageData data)
         {
             if (this.IsMyMessage(data))
@@ -575,6 +685,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
         protected override void ProcessSensorData(SensorData data)
         {
             if (this.IsMyMessage(data))
@@ -593,6 +707,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
         protected override void ProcessSystemPerformanceData(SystemPerformanceData data)
         {
             if (this.IsMyMessage(data))
@@ -610,12 +728,41 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         // private methods
 
-        private bool IsMyMessage(IotDataContext data)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private List<ResourceNameContainer> GenerateDeviceCommands()
         {
-            return true;
-            //return (data != null && data.GetDeviceID().Equals(this.deviceID));
+            // IFF we have any changed properties, create a new list
+            List<ResourceNameContainer> deviceCmdResourceList = null;
+
+            // TODO: implement this - the following is just a template
+            ActuatorData data = new ActuatorData();
+            ResourceNameContainer deviceCmdResource = new ResourceNameContainer(this.cmdResource);
+            deviceCmdResource.DataContext = data;
+            
+            // TODO: for now, list is null
+            return deviceCmdResourceList;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private bool IsMyMessage(IotDataContext data)
+        {
+            // placeholder for further narrowing of IotDataContext data processing
+            // for now, this is moot - the model manager distributes updates to the
+            // appropriate model state, which in turn notifies its listener (this)
+            // of those updates
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         private void ProvisionModelState()
         {
             DigitalTwinModelManager dtModelManager =
@@ -623,25 +770,44 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
             if (dtModelManager != null)
             {
-                Debug.LogError($"NORMAL: Provisioning device instance with URI {this.dtmiUri} and name {this.dtmiName}");
-                this.digitalTwinModelState =
-                    dtModelManager.CreateModelState(
-                        this.deviceID,
-                        this.locationID,
-                        this.useGuidInInstanceKey,
-                        this.controllerID,
-                        (IDataContextEventListener) this);
+                Debug.Log(
+                    $"NORMAL: Provisioning DT model state instance with " +
+                    $"\n\tURI = {this.dtmiUri}" +
+                    $"\n\tName = {this.dtmiName}" +
+                    $"\n\tDevice ID = {this.deviceID}" +
+                    $"\n\tLocation ID = {this.locationID}" +
+                    $"\n\tController ID = {this.controllerID}");
+
+                if (this.digitalTwinModelState == null)
+                {
+                    this.digitalTwinModelState =
+                        dtModelManager.CreateModelState(
+                            this.deviceID,
+                            this.locationID,
+                            this.useGuidInInstanceKey,
+                            this.controllerID,
+                            (IDataContextEventListener)this);
+                }
+                else
+                {
+                    this.digitalTwinModelState.UpdateConnectionState(this.deviceID, this.locationID);
+
+                    dtModelManager.UpdateModelState(this.digitalTwinModelState);
+                }
 
                 this.OnModelUpdateEvent();
 
-                Debug.LogError($"NORMAL: Created model state with URI {this.dtmiUri} and instance {this.digitalTwinModelState.GetModelSyncKey()}");
-                Debug.LogError($"NORMAL: Raw DTDL JSON\n==========\n{this.digitalTwinModelState.GetRawModelJson()}\n==========\n");
+                Debug.Log($"NORMAL: Created model state with URI {this.dtmiUri} and instance {this.digitalTwinModelState.GetModelSyncKey()}");
+                Debug.Log($"NORMAL: Raw DTDL JSON\n==========\n{this.digitalTwinModelState.GetModelJson()}\n==========\n");
 
                 // once provisioned, we're done with the provisioning button
                 if (this.provisionDeviceTwinButton != null) this.provisionDeviceTwinButton.interactable = false;
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void UpdateConnectionState()
         {
             ConnectionStateData connStateData =
@@ -657,21 +823,47 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             }
         }
 
-        private void UpdateModelRawData()
+        /// <summary>
+        /// 
+        /// </summary>
+        private void UpdateModelJson()
         {
-            // it's possible the model state object hasn't
-            // been provisioned yet
-            Debug.LogError("NORMAL: Updating JSON raw model data...");
+            if (this.modelContentText != null)
+            {
+                DigitalTwinModelManager modelMgr = EventProcessor.GetInstance().GetDigitalTwinModelManager();
 
+                if (this.digitalTwinModelState != null)
+                {
+                    Debug.Log($"Updating model JSON via DT Model State instance: {this.digitalTwinModelState.GetModelControllerID()}");
+                    this.modelContentText.text =
+                        this.digitalTwinModelState.GetModelJson();
+                }
+                else
+                {
+                    Debug.Log($"Updating model JSON via DT Model Manager (state not yet created): {this.controllerID}");
+                    this.modelContentText.text =
+                        modelMgr.GetDigitalTwinModelJson(this.controllerID);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void UpdateModelDataAndProperties()
+        {
+            // it's possible the model state object hasn't been provisioned yet;
+            // however, we may still be able to load the model's JSON, as it's
+            // retrieved via the controller ID, which we might already know
+            Debug.Log("NORMAL: Updating digital twin model JSON data...");
+
+            this.UpdateModelJson();
+
+            // if the model state has already been created,
+            // (re) build the model data and display it
             if (this.digitalTwinModelState != null)
             {
                 this.digitalTwinModelState.BuildModelData();
-
-                if (this.modelContentText != null)
-                {
-                    this.modelContentText.text =
-                        this.digitalTwinModelState.GetRawModelJson();
-                }
 
                 List<string> propKeys = this.digitalTwinModelState.GetModelPropertyKeys();
                 StringBuilder propKeysStr = new StringBuilder();
@@ -684,7 +876,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.modelProps = propKeysStr.ToString();
                 this.propsContentText.text = this.modelProps;
 
-                Debug.LogError(
+                Debug.Log(
                     $"Property Keys for {this.digitalTwinModelState.GetModelSyncKey()}:\n{this.propsContentText.text}");
 
                 List<string> telemetryKeys = this.digitalTwinModelState.GetModelPropertyTelemetryKeys();
@@ -698,22 +890,40 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.modelTelemetries = telemetryKeysStr.ToString();
                 this.statusContentText.text = this.modelTelemetries;
 
-                Debug.LogError(
+                Debug.Log(
                     $"Telemetry Keys for {this.digitalTwinModelState.GetModelSyncKey()}:\n{this.statusContentText.text}");
-            }
-            else
-            {
-                if (this.modelContentText != null)
-                {
-                    this.modelContentText.text =
-                        EventProcessor.GetInstance().GetDigitalTwinModelManager().GetRawModelJson(this.controllerID);
-                }
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        private void UpdateCommandResourceName()
+        {
+            if (this.cmdResource == null)
+            {
+                this.cmdResource = new ResourceNameContainer(this.deviceID, ConfigConst.ACTUATOR_CMD);
+            }
+            else
+            {
+                this.cmdResource.DeviceName = this.deviceID;
+                this.cmdResource.InitFullResourceName();
+            }
+
+            this.cmdResourceName = this.cmdResource.GetFullResourceName();
+
+            if (this.deviceCmdResourceText != null)
+            {
+                this.deviceCmdResourceText.text = this.cmdResourceName;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         private void UpdateTwinProperties()
         {
-
+            // TODO: this will be involved - move to a separate class
         }
 
     }

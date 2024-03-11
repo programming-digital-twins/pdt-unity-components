@@ -80,7 +80,7 @@ namespace LabBenchStudios.Pdt.Unity.Model
 
             if (exogenousCollider.tag.Equals(this.playerTagName))
             {
-                Debug.Log($"Enabling Digital Twin HUD...");
+                Debug.Log($"Showing Digital Twin component HUD...");
 
                 // enable the canvas straight away - it will fade in shortly
                 if (this.hasDisplayCanvas)
@@ -101,7 +101,7 @@ namespace LabBenchStudios.Pdt.Unity.Model
 
             if (exogenousCollider.tag.Equals(this.playerTagName))
             {
-                Debug.Log($"Disabling Digital Twin HUD...");
+                Debug.Log($"Hiding Digital Twin component HUD...");
 
                 // wait to disable the canvas until fade out is complete
                 if (this.hasDisplayCanvasGroup)
