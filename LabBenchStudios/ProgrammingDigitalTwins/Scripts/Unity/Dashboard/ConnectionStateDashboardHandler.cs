@@ -71,7 +71,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         public void LogErrorMessage(string message, Exception ex)
         {
-            base.HandleErrorLogMessage(message);
+            base.HandleErrorLogMessage(message, ex);
         }
 
         public void LogWarningMessage(string message)

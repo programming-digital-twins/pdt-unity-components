@@ -32,6 +32,8 @@ using TMPro;
 using LabBenchStudios.Pdt.Common;
 using LabBenchStudios.Pdt.Data;
 using LabBenchStudios.Pdt.Model;
+using System.Linq;
+using System.Text;
 
 namespace LabBenchStudios.Pdt.Unity.Common
 {
@@ -127,7 +129,7 @@ namespace LabBenchStudios.Pdt.Unity.Common
         {
             if (this.enableTimeAndDateUpdates)
             {
-                InvokeRepeating("UpdateTimeAndDate", 1.0f, 1.0f);
+                InvokeRepeating(nameof(UpdateTimeAndDate), 1.0f, 1.0f);
             }
         }
 
@@ -205,8 +207,22 @@ namespace LabBenchStudios.Pdt.Unity.Common
 
         public void HandleErrorLogMessage(string message)
         {
+            this.HandleErrorLogMessage(message, null);
+        }
+
+        public void HandleErrorLogMessage(string message, Exception e)
+        {
             if (this.enableErrorLogProcessing && message != null)
             {
+                if (e != null)
+                {
+                    StringBuilder sb = new();
+                    sb.Append(e.Message);
+                    sb.Append($"\nException:\n{e}");
+
+                    message = sb.ToString();
+                }
+
                 this.errorLogQueue.Enqueue(message);
             }
         }

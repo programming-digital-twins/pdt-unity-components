@@ -31,10 +31,11 @@ using TMPro;
 using LabBenchStudios.Pdt.Common;
 using LabBenchStudios.Pdt.Data;
 using LabBenchStudios.Pdt.Unity.Common;
+using LabBenchStudios.Pdt.Model;
 
 namespace LabBenchStudios.Pdt.Unity.Dashboard
 {
-    public class HvacSystemDashboardHandler : BaseAsyncDataMessageProcessor
+    public class HvacSystemDashboardHandler : BaseAsyncDataMessageProcessor, IDataContextExtendedListener
     {
         [SerializeField]
         private GameObject envCurTemperatureDisplay = null;
@@ -53,17 +54,101 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private TMP_Text envCurHumidityLog = null;
         private TMP_Text envCurPressureLog = null;
 
+        private float requestedTemp = 0.0f;
 
-        // protected
+        private float curTemp = 0.0f;
+        private float curHumidity = 0.0f;
+        private float curPressure = 0.0f;
+
+        private IDigitalTwinStateProcessor thermostatStateProcessor = null;
+        private IDigitalTwinStateProcessor humidifierStateProcessor = null;
+        private IDigitalTwinStateProcessor barometerStateProcessor  = null;
+
+        // public methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtStateProcessor"></param>
+        public void SetDigitalTwinStateProcessor(IDigitalTwinStateProcessor dtStateProcessor)
+        {
+            if (dtStateProcessor != null)
+            {
+                switch (dtStateProcessor.GetModelControllerID())
+                {
+                    case ModelNameUtil.DtmiControllerEnum.Barometer:
+                        // set barometer state processor ref
+                        this.barometerStateProcessor = dtStateProcessor;
+
+                        // create humidifier state processor
+                        this.humidifierStateProcessor =
+                            this.CreateOrUpdateDigitalTwinStateProcessor(
+                                this.barometerStateProcessor,
+                                this.humidifierStateProcessor,
+                                ModelNameUtil.DtmiControllerEnum.Humidifier);
+
+                        // create thermostat state processor
+                        this.thermostatStateProcessor =
+                            this.CreateOrUpdateDigitalTwinStateProcessor(
+                                this.barometerStateProcessor,
+                                this.thermostatStateProcessor,
+                                ModelNameUtil.DtmiControllerEnum.Thermostat);
+
+                        break;
+
+                    case ModelNameUtil.DtmiControllerEnum.Humidifier:
+                        // set humidifier state processor ref
+                        this.humidifierStateProcessor = dtStateProcessor;
+
+                        // create barometer state processor
+                        this.barometerStateProcessor =
+                            this.CreateOrUpdateDigitalTwinStateProcessor(
+                                this.humidifierStateProcessor,
+                                this.barometerStateProcessor,
+                                ModelNameUtil.DtmiControllerEnum.Barometer);
+
+                        // create thermostat state processor
+                        this.thermostatStateProcessor =
+                            this.CreateOrUpdateDigitalTwinStateProcessor(
+                                this.humidifierStateProcessor,
+                                this.thermostatStateProcessor,
+                                ModelNameUtil.DtmiControllerEnum.Thermostat);
+
+                        break;
+
+                    case ModelNameUtil.DtmiControllerEnum.Thermostat:
+                        // set thermostat state processor ref
+                        this.thermostatStateProcessor = dtStateProcessor;
+
+                        // create barometer state processor
+                        this.barometerStateProcessor =
+                            this.CreateOrUpdateDigitalTwinStateProcessor(
+                                this.thermostatStateProcessor,
+                                this.barometerStateProcessor,
+                                ModelNameUtil.DtmiControllerEnum.Barometer);
+
+                        // create humidifier state processor
+                        this.humidifierStateProcessor =
+                            this.CreateOrUpdateDigitalTwinStateProcessor(
+                                this.thermostatStateProcessor,
+                                this.humidifierStateProcessor,
+                                ModelNameUtil.DtmiControllerEnum.Humidifier);
+
+                        break;
+                }
+            }
+        }
+
+        // protected methods
 
         protected override void InitMessageHandler()
         {
             try
             {
-                this.envCurTemperatureLog = this.envCurTemperatureDisplay.GetComponent<TextMeshProUGUI>();
-                this.envNewTemperatureLog = this.envNewTemperatureDisplay.GetComponent<TextMeshProUGUI>();
-                this.envCurHumidityLog = this.envCurHumidityDisplay.GetComponent<TextMeshProUGUI>();
-                this.envCurPressureLog = this.envCurPressureDisplay.GetComponent<TextMeshProUGUI>();
+                this.envCurTemperatureLog = this.envCurTemperatureDisplay?.GetComponent<TextMeshProUGUI>();
+                this.envNewTemperatureLog = this.envNewTemperatureDisplay?.GetComponent<TextMeshProUGUI>();
+                this.envCurHumidityLog    = this.envCurHumidityDisplay?.GetComponent<TextMeshProUGUI>();
+                this.envCurPressureLog    = this.envCurPressureDisplay?.GetComponent<TextMeshProUGUI>();
             }
             catch (Exception ex)
             {
@@ -92,25 +177,27 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             {
                 int typeID = data.GetDeviceType();
 
-                Debug.Log("Received SensorData: " + data + " - " + typeID);
+                Debug.Log($"Processing incoming thermostat SensorData: {data.GetDeviceID()} - {typeID}");
 
-                if (typeID == ConfigConst.TEMP_SENSOR_TYPE && this.envCurTemperatureLog != null)
+                switch (typeID)
                 {
-                    double cookedVal = Math.Round(data.GetValue(), 1);
-                    this.envCurTemperatureLog.text = cookedVal.ToString();
+                    case ConfigConst.TEMP_SENSOR_TYPE:
+                        curTemp = (float) Math.Round(data.GetValue(), 1);
+                        break;
+
+                    case ConfigConst.HUMIDITY_SENSOR_TYPE:
+                        curHumidity = (float) Math.Round(data.GetValue(), 1);
+                        break;
+
+                    case ConfigConst.PRESSURE_SENSOR_TYPE:
+                        curPressure = (float) Math.Round(data.GetValue(), 1);
+                        break;
+
                 }
 
-                if (typeID == ConfigConst.HUMIDITY_SENSOR_TYPE && this.envCurHumidityLog != null)
-                {
-                    double cookedVal = Math.Round(data.GetValue(), 1);
-                    this.envCurHumidityLog.text = cookedVal.ToString();
-                }
-
-                if (typeID == ConfigConst.PRESSURE_SENSOR_TYPE && this.envCurPressureLog != null)
-                {
-                    double cookedVal = Math.Round(data.GetValue(), 1);
-                    this.envCurPressureLog.text = cookedVal.ToString();
-                }
+                if (this.envCurTemperatureLog != null) this.envCurTemperatureLog.text = curTemp.ToString();
+                if (this.envCurHumidityLog != null) this.envCurHumidityLog.text = curHumidity.ToString();
+                if (this.envCurPressureLog != null) this.envCurPressureLog.text = curPressure.ToString();
             }
         }
 
@@ -119,5 +206,78 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             // nothing to do
         }
 
+        // private methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="adjustedVal"></param>
+        private void GenerateAndSendActuationEvent(IDigitalTwinStateProcessor dtStateProcessor, float adjustedVal)
+        {
+            if (dtStateProcessor != null)
+            {
+                ActuatorData data = new();
+
+                // note: recipient should be able to auto shut-off
+                // hvac once desired temp is reached - it should not
+                // have to rely on a follow up command from a remote
+                // system (hosted within the DTA)
+                data.SetName(ConfigConst.ACTUATOR_CMD);
+                data.SetTypeCategoryID(ConfigConst.ENV_TYPE_CATEGORY);
+                data.SetTypeID(ConfigConst.HVAC_ACTUATOR_TYPE);
+                data.SetCommand(ConfigConst.COMMAND_ON);
+                data.SetValue(adjustedVal);
+
+                // state processor will ensure the target device is set
+                ResourceNameContainer resource =
+                    dtStateProcessor.GenerateOutgoingStateUpdate(data);
+
+                EventProcessor.GetInstance().ProcessStateUpdateToPhysicalThing(resource);
+            }
+            else
+            {
+                Debug.LogError("No Digital Twin State Processor set. Ignoring actuation event.");
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="primaryStateProcessor"></param>
+        /// <param name="otherStateProcessor"></param>
+        /// <param name="controllerID"></param>
+        /// <returns></returns>
+        private IDigitalTwinStateProcessor CreateOrUpdateDigitalTwinStateProcessor(
+            IDigitalTwinStateProcessor primaryStateProcessor,
+            IDigitalTwinStateProcessor otherStateProcessor,
+            ModelNameUtil.DtmiControllerEnum controllerID)
+        {
+            DigitalTwinModelManager dtModelManager =
+                EventProcessor.GetInstance().GetDigitalTwinModelManager();
+
+            if (otherStateProcessor == null)
+            {
+                otherStateProcessor =
+                    dtModelManager.CreateModelState(
+                        primaryStateProcessor,
+                        false, // no GUID
+                        true,  // add to parent
+                        controllerID,
+                        (IDataContextEventListener) this);
+            }
+            else
+            {
+                otherStateProcessor.UpdateConnectionState(primaryStateProcessor);
+
+                if (otherStateProcessor is DigitalTwinModelState)
+                {
+                    dtModelManager.UpdateModelState((DigitalTwinModelState) otherStateProcessor);
+                }
+            }
+
+            return otherStateProcessor;
+        }
+
     }
+
 }

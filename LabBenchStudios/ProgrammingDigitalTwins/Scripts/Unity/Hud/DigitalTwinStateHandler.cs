@@ -82,7 +82,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private GameObject statusPanel = null;
 
         [SerializeField]
-        private GameObject statusPanelUpdatePropsButtonObject = null;
+        private GameObject propsPanelShowButtonObject = null;
 
         [SerializeField]
         private GameObject statusPanelPropsContentObject = null;
@@ -106,19 +106,19 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private GameObject statusPanelStateContentObject = null;
 
         [SerializeField]
-        private GameObject statusPanelStopDeviceButtonObject = null;
+        private GameObject pauseTelemetryButtonObject = null;
 
         [SerializeField]
-        private GameObject statusPanelStartDeviceButtonObject = null;
+        private GameObject resumeTelemetryButtonObject = null;
 
         [SerializeField]
-        private GameObject statusPanelUpdateDeviceButtonObject = null;
-
-        [SerializeField]
-        private GameObject statusPanelPauseDeviceButtonObject = null;
+        private GameObject updateDeviceButtonObject = null;
 
         [SerializeField]
         private GameObject statusPanelCloseButtonObject = null;
+
+        [SerializeField]
+        private GameObject propsEditorPanel = null;
 
         [SerializeField]
         private GameObject animationListenerContainer = null;
@@ -147,14 +147,13 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         private Button provisionDeviceTwinButton = null;
 
-        private Button startDeviceButton = null;
-        private Button stopDeviceButton = null;
+        private Button resumeTelemetryButton = null;
+        private Button pauseTelemetryButton = null;
         private Button updateDeviceButton = null;
-        private Button pauseDeviceButton = null;
         private Button showModelPanelButton = null;
         private Button closeModelPanelButton = null;
         private Button closeStatusPanelButton = null;
-        private Button updateTwinPropertiesButton = null;
+        private Button showPropsPanelButton = null;
 
         private bool hasModelPanel = false;
         private bool hasModelPanelJsonContainer = false;
@@ -163,6 +162,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private bool hasStatusPanel = false;
         private bool hasStatusPanelPropsContainer = false;
         private bool hasStatusPanelTelemetryContainer = false;
+
+        private bool hasPropsEditorPanel = false;
+        private bool isPropsEditorPanelActive = false;
+
+        private bool enableIncomingTelemetry = true;
 
         private string dtmiUri  = ModelNameUtil.IOT_MODEL_CONTEXT_MODEL_ID;
         private string dtmiName = ModelNameUtil.IOT_MODEL_CONTEXT_NAME;
@@ -176,6 +180,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private string modelTelemetries = "";
 
         private DigitalTwinModelState digitalTwinModelState = null;
+        private DigitalTwinPropertiesHandler digitalTwinPropsHandler = null;
 
         private ResourceNameContainer cmdResource = null;
 
@@ -204,6 +209,17 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             if (this.hasModelPanel)
             {
                 this.modelPanel.SetActive(false);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void ClosePropsEditorPanel()
+        {
+            if (this.hasPropsEditorPanel)
+            {
+                this.propsEditorPanel.SetActive(false);
             }
         }
 
@@ -267,21 +283,49 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.modelPanel.SetActive(this.isModelPanelActive);
             }
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
-        public void StartPhysicalDevice()
+        public void UpdatePropsEditorPanelVisibility()
         {
-            // TODO: implement this
+            if (this.hasPropsEditorPanel)
+            {
+                this.isPropsEditorPanelActive = !this.isPropsEditorPanelActive;
+                this.propsEditorPanel.SetActive(this.isPropsEditorPanelActive);
+            }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public void StopPhysicalDevice()
+        public void PauseIncomingTelemetry()
         {
-            // TODO: implement this
+            this.enableIncomingTelemetry = false;
+
+            if (this.pauseTelemetryButton != null) this.pauseTelemetryButton.interactable = false;
+            if (this.resumeTelemetryButton != null) this.resumeTelemetryButton.interactable = true;
+
+            if (this.digitalTwinModelState != null)
+            {
+                this.digitalTwinModelState.EnableIncomingTelemetryProcessing(this.enableIncomingTelemetry);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void ResumeIncomingTelemetry()
+        {
+            this.enableIncomingTelemetry = true;
+
+            if (this.pauseTelemetryButton != null) this.pauseTelemetryButton.interactable = true;
+            if (this.resumeTelemetryButton != null) this.resumeTelemetryButton.interactable = false;
+
+            if (this.digitalTwinModelState != null)
+            {
+                this.digitalTwinModelState.EnableIncomingTelemetryProcessing(this.enableIncomingTelemetry);
+            }
         }
 
         /// <summary>
@@ -386,6 +430,20 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
 
         // protected
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void InitPropsEditorPanelControls()
+        {
+            if (this.propsEditorPanel != null)
+            {
+                this.digitalTwinPropsHandler = this.propsEditorPanel.GetComponent<DigitalTwinPropertiesHandler>();
+
+                this.hasPropsEditorPanel = true;
+                this.propsEditorPanel.SetActive(false);
+            }
+        }
 
         /// <summary>
         /// 
@@ -504,39 +562,39 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 }
             }
 
-            if (this.statusPanelUpdatePropsButtonObject != null)
+            if (this.propsPanelShowButtonObject != null)
             {
-                this.updateTwinPropertiesButton = this.statusPanelUpdatePropsButtonObject.GetComponent<Button>();
+                this.showPropsPanelButton = this.propsPanelShowButtonObject.GetComponent<Button>();
 
-                if (this.updateTwinPropertiesButton != null)
+                if (this.showPropsPanelButton != null)
                 {
-                    this.updateTwinPropertiesButton.onClick.AddListener(() => this.UpdateTwinProperties());
+                    this.showPropsPanelButton.onClick.AddListener(() => this.UpdatePropsEditorPanelVisibility());
                 }
             }
 
-            if (this.statusPanelStartDeviceButtonObject != null)
+            if (this.resumeTelemetryButtonObject != null)
             {
-                this.startDeviceButton = this.statusPanelStartDeviceButtonObject.GetComponent<Button>();
+                this.resumeTelemetryButton = this.resumeTelemetryButtonObject.GetComponent<Button>();
 
-                if (this.startDeviceButton != null)
+                if (this.resumeTelemetryButton != null)
                 {
-                    this.startDeviceButton.onClick.AddListener(() => this.StartPhysicalDevice());
+                    this.resumeTelemetryButton.onClick.AddListener(() => this.ResumeIncomingTelemetry());
                 }
             }
 
-            if (this.statusPanelStopDeviceButtonObject != null)
+            if (this.pauseTelemetryButtonObject != null)
             {
-                this.stopDeviceButton = this.statusPanelStopDeviceButtonObject.GetComponent<Button>();
+                this.pauseTelemetryButton = this.pauseTelemetryButtonObject.GetComponent<Button>();
 
-                if (this.stopDeviceButton != null)
+                if (this.pauseTelemetryButton != null)
                 {
-                    this.stopDeviceButton.onClick.AddListener(() => this.StopPhysicalDevice());
+                    this.pauseTelemetryButton.onClick.AddListener(() => this.PauseIncomingTelemetry());
                 }
             }
 
-            if (this.statusPanelUpdateDeviceButtonObject != null)
+            if (this.updateDeviceButtonObject != null)
             {
-                this.updateDeviceButton = this.statusPanelUpdateDeviceButtonObject.GetComponent<Button>();
+                this.updateDeviceButton = this.updateDeviceButtonObject.GetComponent<Button>();
 
                 if (this.updateDeviceButton != null)
                 {
@@ -544,15 +602,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 }
             }
 
-            if (this.statusPanelPauseDeviceButtonObject != null)
-            {
-                this.pauseDeviceButton = this.statusPanelPauseDeviceButtonObject.GetComponent<Button>();
-
-                if (this.pauseDeviceButton != null)
-                {
-                    this.pauseDeviceButton.onClick.AddListener(() => this.PauseDeviceTelemetry());
-                }
-            }
+            // start in 'resume incoming telemetry processing' state
+            this.ResumeIncomingTelemetry();
         }
 
         /// <summary>
@@ -622,9 +673,10 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.dtmiUri  = ModelNameUtil.CreateModelID(this.controllerID, this.modelVersion);
                 this.dtmiName = ModelNameUtil.GetNameFromDtmiURI(this.dtmiUri);
 
-                // second: init controls
+                // second: init individual panels and their control
                 this.InitStatusPanelControls();
                 this.InitModelPanelControls();
+                this.InitPropsEditorPanelControls();
 
                 // third: update deviceName ID list
                 this.UpdateDeviceIDList();
@@ -685,7 +737,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         /// <param name="data"></param>
         protected override void ProcessActuatorData(ActuatorData data)
         {
-            if (this.IsMyMessage(data))
+            if (this.IsIncomingTelemetryProcessingEnabled(data))
             {
                 String jsonData = DataUtil.ActuatorDataToJson(data);
 
@@ -709,7 +761,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         {
             this.UpdateDeviceIDList();
 
-            if (this.IsMyMessage(data))
+            if (this.IsIncomingTelemetryProcessingEnabled(data))
             {
                 String connStateMsg = "...";
 
@@ -738,7 +790,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         /// <param name="data"></param>
         protected override void ProcessMessageData(MessageData data)
         {
-            if (this.IsMyMessage(data))
+            if (this.IsIncomingTelemetryProcessingEnabled(data))
             {
                 // nothing to do
 
@@ -760,7 +812,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         /// <param name="data"></param>
         protected override void ProcessSensorData(SensorData data)
         {
-            if (this.IsMyMessage(data))
+            if (this.IsIncomingTelemetryProcessingEnabled(data))
             {
                 StringBuilder sb = new StringBuilder(this.modelTelemetries);
 
@@ -792,7 +844,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         /// <param name="data"></param>
         protected override void ProcessSystemPerformanceData(SystemPerformanceData data)
         {
-            if (this.IsMyMessage(data))
+            if (this.IsIncomingTelemetryProcessingEnabled(data))
             {
                 StringBuilder sb = new StringBuilder(this.modelTelemetries);
 
@@ -827,7 +879,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             List<ResourceNameContainer> deviceCmdResourceList = null;
 
             // TODO: implement this - the following is just a template
-            ActuatorData data = new ActuatorData();
+            ActuatorData data = new();
             ResourceNameContainer deviceCmdResource = new ResourceNameContainer(this.cmdResource);
             deviceCmdResource.DataContext = data;
             
@@ -840,13 +892,13 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        private bool IsMyMessage(IotDataContext data)
+        private bool IsIncomingTelemetryProcessingEnabled(IotDataContext data)
         {
             // placeholder for further narrowing of IotDataContext data processing
             // for now, this is moot - the model manager distributes updates to the
             // appropriate model state, which in turn notifies its listener (this)
             // of those updates
-            return true;
+            return this.enableIncomingTelemetry;
         }
 
         /// <summary>
@@ -882,6 +934,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                     this.digitalTwinModelState.UpdateConnectionState(this.deviceID, this.locationID);
 
                     dtModelManager.UpdateModelState(this.digitalTwinModelState);
+                }
+
+                if (this.digitalTwinPropsHandler != null)
+                {
+                    this.digitalTwinPropsHandler.SetDigitalTwinModelState(this.digitalTwinModelState);
                 }
 
                 if (this.eventListener != null)
@@ -1009,6 +1066,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             if (this.deviceCmdResourceText != null)
             {
                 this.deviceCmdResourceText.text = this.cmdResourceName;
+            }
+
+            if (this.digitalTwinPropsHandler != null)
+            {
+                this.digitalTwinPropsHandler.SetDigitalTwinCommandResource(this.cmdResource);
             }
         }
 
