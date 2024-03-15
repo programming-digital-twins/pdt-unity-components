@@ -23,6 +23,8 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Text;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -34,9 +36,7 @@ using LabBenchStudios.Pdt.Data;
 using LabBenchStudios.Pdt.Model;
 
 using LabBenchStudios.Pdt.Unity.Common;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using System.Text;
+using LabBenchStudios.Pdt.Unity.Hud;
 
 namespace LabBenchStudios.Pdt.Unity.Dashboard
 {
@@ -47,6 +47,9 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         [SerializeField]
         private ModelNameUtil.DtmiControllerEnum controllerID = ModelNameUtil.DtmiControllerEnum.Custom;
+
+        [SerializeField]
+        private bool listenToAllDevices = false;
 
         [SerializeField]
         private bool useGuidInInstanceKey = false;
@@ -173,6 +176,12 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private string deviceID = ConfigConst.NOT_SET;
         private string locationID = ConfigConst.NOT_SET;
 
+        private int typeCategoryID = ConfigConst.DEFAULT_TYPE_CATEGORY_ID;
+        private int typeID = ConfigConst.DEFAULT_TYPE_ID;
+
+        private string telemetryResourceName =
+            ConfigConst.PRODUCT_NAME + "/" + ConfigConst.EDGE_DEVICE + "/" + ConfigConst.ACTUATOR_CMD;
+
         private string cmdResourceName =
             ConfigConst.PRODUCT_NAME + "/" + ConfigConst.EDGE_DEVICE + "/" + ConfigConst.ACTUATOR_CMD;
 
@@ -182,6 +191,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private DigitalTwinModelState digitalTwinModelState = null;
         private DigitalTwinPropertiesHandler digitalTwinPropsHandler = null;
 
+        private ResourceNameContainer telemetryResource = null;
         private ResourceNameContainer cmdResource = null;
 
         private IDataContextEventListener animationListener = null;
@@ -333,36 +343,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         /// </summary>
         public void UpdatePhysicalDevice()
         {
-            // first: set the command resource name text
-            //        this is automatically set initially, but the user can
-            //        manually override (eventually - future update), so check
-            //        the current value and apply it to the locally stored
-            //        cmdResourceName string
-            if (this.deviceCmdResourceText != null)
-            {
-                this.cmdResourceName = this.deviceCmdResourceText.text;
-            }
-
-            // second: generate the commands to be send the target physical device
-            //         this will take any writeable properties and convert any
-            //         deltas (from any recent change) into ActuatorData instances
-            //         for (eventual) transmission to the target physical device;
-            //         for each ActuatorData instance, a ResourceNameContainer will
-            //         be created with the cmdResourceName as the target resource and
-            //         the ActuatorData as the IotDataContext instance
-            List<ResourceNameContainer> deviceCmdResourceList = this.GenerateDeviceCommands();
-
-            // third: send each generated ResourceNameContainer on its way
-            //        this will iterate over the device command list and send each
-            //        one to the target physical device;
-            //        a future update may permit all to be sent in one message
-            if (deviceCmdResourceList != null)
-            {
-                foreach (ResourceNameContainer resource in deviceCmdResourceList)
-                {
-                    EventProcessor.GetInstance().ProcessStateUpdateToPhysicalThing(resource);
-                }
-            }
+            this.digitalTwinPropsHandler?.SendDeviceCommands();
         }
 
         /// <summary>
@@ -601,9 +582,6 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                     this.updateDeviceButton.onClick.AddListener(() => this.UpdatePhysicalDevice());
                 }
             }
-
-            // start in 'resume incoming telemetry processing' state
-            this.ResumeIncomingTelemetry();
         }
 
         /// <summary>
@@ -669,7 +647,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         {
             try
             {
-                // first: set DTMI labels
+                // first: set DTMI labels and ID's
                 this.dtmiUri  = ModelNameUtil.CreateModelID(this.controllerID, this.modelVersion);
                 this.dtmiName = ModelNameUtil.GetNameFromDtmiURI(this.dtmiUri);
 
@@ -684,10 +662,11 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 // fourth: update the command resource name
                 this.UpdateCommandResourceName();
 
-                // fifth: other init steps (if needed - future)
-
-                // finally: register for events
+                // fifth: register for events
                 base.RegisterForSystemStatusEvents((ISystemStatusEventListener) this);
+
+                // finally: start in 'resume incoming telemetry processing' state
+                this.ResumeIncomingTelemetry();
             }
             catch (Exception ex)
             {
@@ -872,24 +851,6 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        private List<ResourceNameContainer> GenerateDeviceCommands()
-        {
-            // IFF we have any changed properties, create a new list
-            List<ResourceNameContainer> deviceCmdResourceList = null;
-
-            // TODO: implement this - the following is just a template
-            ActuatorData data = new();
-            ResourceNameContainer deviceCmdResource = new ResourceNameContainer(this.cmdResource);
-            deviceCmdResource.DataContext = data;
-            
-            // TODO: for now, list is null
-            return deviceCmdResourceList;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
         private bool IsIncomingTelemetryProcessingEnabled(IotDataContext data)
@@ -911,12 +872,20 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
             if (dtModelManager != null)
             {
+                IotDataContext dataContext =
+                    ModelNameUtil.GenerateDataContext(this.controllerID, this.deviceID, this.locationID);
+
+                this.typeCategoryID = dataContext.GetTypeCategoryID();
+                this.typeID = dataContext.GetTypeID();
+
                 Debug.Log(
                     $"NORMAL: Provisioning DT model state instance with " +
                     $"\n\tURI = {this.dtmiUri}" +
                     $"\n\tName = {this.dtmiName}" +
                     $"\n\tDevice ID = {this.deviceID}" +
                     $"\n\tLocation ID = {this.locationID}" +
+                    $"\n\tType Category ID = {this.typeCategoryID}" +
+                    $"\n\tType ID = {this.typeID}" +
                     $"\n\tController ID = {this.controllerID}");
 
                 if (this.digitalTwinModelState == null)
@@ -925,6 +894,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                         dtModelManager.CreateModelState(
                             this.deviceID,
                             this.locationID,
+                            this.typeCategoryID,
+                            this.typeID,
                             this.useGuidInInstanceKey,
                             this.controllerID,
                             (IDataContextEventListener) this);
@@ -935,6 +906,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
                     dtModelManager.UpdateModelState(this.digitalTwinModelState);
                 }
+
+                this.UpdateCommandResourceName();
 
                 if (this.digitalTwinPropsHandler != null)
                 {
@@ -1053,13 +1026,24 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         {
             if (this.cmdResource == null)
             {
-                this.cmdResource = new ResourceNameContainer(this.deviceID, ConfigConst.ACTUATOR_CMD);
+                this.cmdResource =
+                    new ResourceNameContainer(
+                        this.deviceID, this.locationID, ConfigConst.ACTUATOR_CMD);
+
+                this.cmdResource.TypeCategoryID = this.typeCategoryID;
+                this.cmdResource.TypeID = this.typeID;
             }
             else
             {
                 this.cmdResource.DeviceName = this.deviceID;
-                this.cmdResource.InitFullResourceName();
             }
+
+            if (this.digitalTwinModelState != null)
+            {
+                this.cmdResource.ResourcePrefix = this.digitalTwinModelState.GetResourcePrefix();
+            }
+
+            this.cmdResource.InitFullResourceName();
 
             this.cmdResourceName = this.cmdResource.GetFullResourceName();
 

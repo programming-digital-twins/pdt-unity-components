@@ -94,6 +94,33 @@ namespace LabBenchStudios.Pdt.Unity.Common
 
         void Awake()
         {
+        }
+
+        void Start()
+        {
+            // first
+            this.InitQueues();
+
+            // second
+            this.InitTimeDisplay();
+
+            // third
+            this.InitEventProcessing();
+
+            // fourth
+            this.InitMessageHandler();
+
+            // final
+            this.isInitialized = true;
+
+            if (this.enableTimeAndDateUpdates)
+            {
+                InvokeRepeating(nameof(UpdateTimeAndDate), 1.0f, 1.0f);
+            }
+        }
+
+        private void InitQueues()
+        {
             this.debugLogQueue = new Queue<string>();
             this.warningLogQueue = new Queue<string>();
             this.errorLogQueue = new Queue<string>();
@@ -103,7 +130,10 @@ namespace LabBenchStudios.Pdt.Unity.Common
             this.connStateDataQueue = new Queue<ConnectionStateData>();
             this.sensorDataQueue = new Queue<SensorData>();
             this.sysPerfDataQueue = new Queue<SystemPerformanceData>();
+        }
 
+        private void InitTimeDisplay()
+        {
             if (this.timeDisplay != null)
             {
                 this.timeLog = this.timeDisplay.GetComponent<TextMeshProUGUI>();
@@ -113,23 +143,15 @@ namespace LabBenchStudios.Pdt.Unity.Common
             {
                 this.dateLog = this.dateDisplay.GetComponent<TextMeshProUGUI>();
             }
+        }
 
+        private void InitEventProcessing()
+        {
             this.eventProcessor = EventProcessor.GetInstance();
 
             if (this.registerForDataCallbacks)
             {
                 this.eventProcessor.RegisterListener((IDataContextEventListener)this);
-            }
-
-            this.InitMessageHandler();
-            this.isInitialized = true;
-        }
-
-        void Start()
-        {
-            if (this.enableTimeAndDateUpdates)
-            {
-                InvokeRepeating(nameof(UpdateTimeAndDate), 1.0f, 1.0f);
             }
         }
 

@@ -67,6 +67,9 @@ namespace LabBenchStudios.Pdt.Unity.Manager
         private bool connectToMqttAsap = false;
 
         [SerializeField]
+        private string messagingClientID = ConfigConst.PRODUCT_NAME + "_" + Guid.NewGuid().ToString();
+
+        [SerializeField]
         private string messagingTopicPrefixName = ConfigConst.PRODUCT_NAME;
 
         [SerializeField]
@@ -118,14 +121,6 @@ namespace LabBenchStudios.Pdt.Unity.Manager
         void Awake()
         {
             DontDestroyOnLoad(gameObject);
-
-            Debug.unityLogger.logEnabled = this.enableLogging;
-
-            this.eventProcessor = EventProcessor.GetInstance();
-            this.eventProcessor.SetRemoteCommandProcessor(this);
-
-            this.delayBetweenRemoteCommands = 60.0f / this.maxRemoteCommandsPerMinute;
-            this.isInitialized = true;
         }
 
         /// <summary>
@@ -365,7 +360,8 @@ namespace LabBenchStudios.Pdt.Unity.Manager
 
             ResourceNameContainer resource =
                 new ResourceNameContainer(deviceName, resourceName, data);
-            resource.ProductPrefix = ConfigConst.PRODUCT_NAME;
+
+            resource.ResourcePrefix = ConfigConst.PRODUCT_NAME;
 
             this.HandleRemoteCommandRequest(resource);
         }
@@ -419,15 +415,28 @@ namespace LabBenchStudios.Pdt.Unity.Manager
         /// </summary>
         private void InitManager()
         {
+            Debug.unityLogger.logEnabled = this.enableLogging;
+
             string msg = "System manager initializing...";
 
             Debug.Log(msg);
+
+            this.eventProcessor = EventProcessor.GetInstance();
+            this.eventProcessor.SetRemoteCommandProcessor(this);
+            this.eventProcessor.GetDigitalTwinModelManager().SetResourcePrefix(this.messagingTopicPrefixName);
+
+            this.delayBetweenRemoteCommands = 60.0f / this.maxRemoteCommandsPerMinute;
+            this.isInitialized = true;
 
             this.remoteCmdDataQueue = new Queue<ResourceNameContainer>();
 
             this.mqttClient =
                 new MqttClientManagedConnector(
-                    this.messagingHostName, this.messagingHostPort, null, this.messagingTopicPrefixName, this.eventProcessor);
+                    this.messagingHostName,
+                    this.messagingHostPort,
+                    this.messagingClientID,
+                    this.messagingTopicPrefixName,
+                    this.eventProcessor);
         }
 
     }

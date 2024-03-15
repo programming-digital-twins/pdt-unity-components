@@ -23,6 +23,8 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Text;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -34,11 +36,8 @@ using LabBenchStudios.Pdt.Data;
 using LabBenchStudios.Pdt.Model;
 
 using LabBenchStudios.Pdt.Unity.Common;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using System.Text;
 
-namespace LabBenchStudios.Pdt.Unity.Dashboard
+namespace LabBenchStudios.Pdt.Unity.Hud
 {
     public class DigitalTwinPropertiesHandler : BaseAsyncDataMessageProcessor, ISystemStatusEventListener
     {
@@ -70,6 +69,21 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private GameObject sendCommandButtonObject = null;
 
         [SerializeField]
+        private GameObject commandGuiTemplate = null;
+
+        [SerializeField]
+        private GameObject valuePropsGuiTemplate = null;
+
+        [SerializeField]
+        private GameObject togglePropGuiTemplate = null;
+
+        [SerializeField]
+        private GameObject messagePropGuidTemplate = null;
+
+        [SerializeField]
+        private GameObject schedulePropGuidTemplate = null;
+
+        [SerializeField]
         private GameObject eventListenerContainer = null;
 
         private GameObject propsPanel = null;
@@ -96,6 +110,12 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             ConfigConst.PRODUCT_NAME + "/" + ConfigConst.EDGE_DEVICE + "/" + ConfigConst.ACTUATOR_CMD;
 
         private string modelProps = "";
+
+        private float verticalAnchorDelta = 400.0f;
+        //private float verticalAnchorDelta = 0.25f;
+
+        private List<GameObject> digitalTwinGuiPropsList = null;
+        private List<IPropertyManagementController> propertyUpdateHandlerList = null;
 
         private DigitalTwinModelState digitalTwinModelState = null;
 
@@ -128,7 +148,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         /// <summary>
         /// 
         /// </summary>
-        public void SendDeviceCommand()
+        public void SendDeviceCommands()
         {
             // first: set the command resource name text
             //        this is automatically set initially, but the user can
@@ -157,6 +177,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             {
                 foreach (ResourceNameContainer resource in deviceCmdResourceList)
                 {
+                    Debug.Log($"Sending command to device: {resource}");
                     EventProcessor.GetInstance().ProcessStateUpdateToPhysicalThing(resource);
                 }
             }
@@ -313,7 +334,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
                 if (this.sendCommandButton != null)
                 {
-                    this.sendCommandButton.onClick.AddListener(() => this.SendDeviceCommand());
+                    this.sendCommandButton.onClick.AddListener(() => this.SendDeviceCommands());
                 }
             }
 
@@ -333,6 +354,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 this.UpdateModelDataAndProperties();
 
                 // third: other init steps (if needed - future)
+                this.digitalTwinGuiPropsList = new List<GameObject>();
+                this.propertyUpdateHandlerList = new List<IPropertyManagementController>();
 
                 // finally: register for events
                 base.RegisterForSystemStatusEvents((ISystemStatusEventListener) this);
@@ -442,16 +465,25 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         /// <returns></returns>
         private List<ResourceNameContainer> GenerateDeviceCommands()
         {
-            // IFF we have any changed properties, create a new list
-            List<ResourceNameContainer> deviceCmdResourceList = null;
+            if (this.propertyUpdateHandlerList.Count > 0)
+            {
+                // IFF we have any changed properties, create a new list
+                List<ResourceNameContainer> deviceCmdResourceList = new List<ResourceNameContainer>();
 
-            // TODO: implement this - the following is just a template
-            ActuatorData data = new();
-            ResourceNameContainer deviceCmdResource = new ResourceNameContainer(this.cmdResource);
-            deviceCmdResource.DataContext = data;
-            
-            // TODO: for now, list is null
-            return deviceCmdResourceList;
+                // TODO: implement this - the following is just a template
+                foreach (IPropertyManagementController propsUpdateHandler in this.propertyUpdateHandlerList)
+                {
+                    ResourceNameContainer deviceCmdResource = new ResourceNameContainer(this.cmdResource);
+                    deviceCmdResource.DataContext = propsUpdateHandler.GenerateCommand();
+
+                    Debug.LogWarning($"Resource: {deviceCmdResource}; Data: {deviceCmdResource.DataContext}");
+                    deviceCmdResourceList.Add(deviceCmdResource);
+                }
+
+                return deviceCmdResourceList;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -482,14 +514,49 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             // (re) build the model data and display it
             if (this.digitalTwinModelState != null)
             {
+                this.ClearDigitalTwinProperties();
+
                 this.digitalTwinModelState.BuildModelData();
 
                 List<string> propKeys = this.digitalTwinModelState.GetModelPropertyKeys();
                 StringBuilder propKeysStr = new StringBuilder();
 
+                float curYPosDelta = 0.0f;
+
                 foreach (string key in propKeys)
                 {
-                    propKeysStr.Append(key).Append("\n");
+                    DigitalTwinProperty property = this.digitalTwinModelState.GetModelProperty(key);
+
+                    // should never be null, but check anyway
+                    if (property != null)
+                    {
+                        // only writeable properties for this handler
+                        // the model should never indicate telemetry or
+                        // commands are 'writeable', but double check anyway
+                        if (property.IsPropertyWriteable() &&
+                            ! property.IsPropertyTelemetry() &&
+                            ! property.IsCommand())
+                        {
+                            this.RenderDigitalTwinProperty(property, curYPosDelta);
+                            curYPosDelta += this.verticalAnchorDelta;
+                        }
+                        else if (property.IsCommand())
+                        {
+                            // commands get special treatment
+                            this.CreateDigitalTwinCommandProperty(property, curYPosDelta);
+                            curYPosDelta += this.verticalAnchorDelta;
+                        }
+
+                        // incoming telemetry is currently processed via the event manager
+                        // and the state handler using the incoming IotDataContext, but not
+                        // directly validated against the digital twin thing's model
+                        //
+                        // a future update to the DTA may eventually use the model to validate
+                        // incoming telemetry using the specified schema type; however, any
+                        // requisite updates are probably best handled by the state handler
+                        // directly, as this handler is for manipulating properties and
+                        // commands only
+                    }
                 }
 
                 this.deviceID = this.digitalTwinModelState.GetDeviceID();
@@ -500,24 +567,211 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 if (this.deviceModelIDText != null) this.deviceModelIDText.text = this.dtmiUri;
                 if (this.deviceModelNameText != null) this.deviceModelNameText.text = this.dtmiName;
 
-                this.modelProps = propKeysStr.ToString();
-
-                if (this.propsContentText != null) this.propsContentText.text = this.modelProps;
-
                 this.UpdateCommandResource();
 
-                Debug.Log(
-                    $"Property Keys for {this.digitalTwinModelState.GetModelSyncKey()}:\n{this.propsContentText.text}");
+                Debug.Log($"Property Keys for {this.digitalTwinModelState.GetModelSyncKey()}");
             }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        private void UpdateTwinProperties()
+        private void ClearDigitalTwinProperties()
         {
-            // TODO: implement this
+            // clear the controller list first
+            this.propertyUpdateHandlerList.Clear();
+
+            // now destroy all the props objects
+            foreach (GameObject go in this.digitalTwinGuiPropsList)
+            {
+                go.SetActive(false);
+
+                Destroy(go);
+            }
+
+            this.digitalTwinGuiPropsList.Clear();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="yPos"></param>
+        /// <returns></returns>
+        private void RenderDigitalTwinProperty(DigitalTwinProperty property, float yPosDelta)
+        {
+            // create the object
+            switch (property.GetPropertyType())
+            {
+                // for now, a limited number of property types are supported - this can
+                // be relatively easily extended with new prefabs that render the properties
+                // mapped by current values in ModelNameUtil.DtmiPropertyTypeEnum, and those
+                // that may be added in the future
+                //
+                // each enum -> one prefab (set of GUI controls)
+                case ModelNameUtil.DtmiPropertyTypeEnum.Count:
+                    this.CreateDigitalTwinValueProperty(property, yPosDelta);
+                    break;
+
+                case ModelNameUtil.DtmiPropertyTypeEnum.Value:
+                    this.CreateDigitalTwinValueProperty(property, yPosDelta);
+                    break;
+
+                case ModelNameUtil.DtmiPropertyTypeEnum.Toggle:
+                    this.CreateDigitalTwinToggleProperty(property, yPosDelta);
+                    break;
+
+                case ModelNameUtil.DtmiPropertyTypeEnum.Message:
+                    this.CreateDigitalTwinMessageProperty(property, yPosDelta);
+                    break;
+
+                case ModelNameUtil.DtmiPropertyTypeEnum.Schedule:
+                    this.CreateDigitalTwinScheduleProperty(property, yPosDelta);
+                    break;
+
+                case ModelNameUtil.DtmiPropertyTypeEnum.Undefined:
+                    this.CreateDigitalTwinMessageProperty(property, yPosDelta);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="go"></param>
+        /// <param name="yPosDelta"></param>
+        private void AddDigitalTwinGuiProperty(DigitalTwinProperty property, GameObject go, float yPosDelta)
+        {
+            if (go != null)
+            {
+                // set the property label
+                try
+                {
+                    Transform t = go.transform.Find("PropsLabel");
+                    TMP_Text guiLabel = t.GetComponent<TextMeshProUGUI>();
+                    guiLabel.text = property.GetDisplayName();
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Can't find properties label for GameObject {go}");
+                }
+
+                // adjust location
+                RectTransform rt = go.GetComponent<RectTransform>();
+                Vector2 anchorPos = new Vector2((rt.anchoredPosition.x - 200), (rt.anchoredPosition.y - yPosDelta));
+                rt.anchoredPosition = anchorPos;
+
+                // activate component
+                go.SetActive(true);
+
+                Debug.Log($"Created GUI for property. Loc: {anchorPos}. Prop: {property}");
+
+                // add to internal list
+                this.digitalTwinGuiPropsList.Add(go);
+
+                // retrieve the controller for each property and set its references
+                // as it needs to know about the property and how to (potentially)
+                // generate an ActuatorData command (if one is requested)
+                try
+                {
+                    IPropertyManagementController propsUpdateHandler =
+                        go.GetComponent<IPropertyManagementController>();
+
+                    if (propsUpdateHandler != null )
+                    {
+                        propsUpdateHandler.InitPropertyController(this.digitalTwinModelState, property);
+
+                        this.propertyUpdateHandlerList.Add(propsUpdateHandler);
+                    }
+                }
+                catch (Exception e)
+                {
+                    // each GameObject in this call should have an IPropertyManagementController;
+                    // however, if not, just ignore and log a message
+                    Debug.LogError($"No IPropertyManagementController for GameObject and property: {property}");
+                }
+            }
+            else
+            {
+                Debug.LogError($"GUI GameObject for property is null: {property}");
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="yPosDelta"></param>
+        private void CreateDigitalTwinCommandProperty(DigitalTwinProperty property, float yPosDelta)
+        {
+            if (this.commandGuiTemplate != null)
+            {
+                GameObject go = Instantiate(this.commandGuiTemplate, this.contentObject.transform);
+
+                this.AddDigitalTwinGuiProperty(property, go, yPosDelta);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="yPosDelta"></param>
+        private void CreateDigitalTwinValueProperty(DigitalTwinProperty property, float yPosDelta)
+        {
+            if (this.valuePropsGuiTemplate != null)
+            {
+                GameObject go = Instantiate(this.valuePropsGuiTemplate, this.contentObject.transform);
+
+                this.AddDigitalTwinGuiProperty(property, go, yPosDelta);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="yPosDelta"></param>
+        private void CreateDigitalTwinToggleProperty(DigitalTwinProperty property, float yPosDelta)
+        {
+            if (this.togglePropGuiTemplate != null)
+            {
+                GameObject go = Instantiate(this.togglePropGuiTemplate, this.contentObject.transform);
+
+                this.AddDigitalTwinGuiProperty(property, go, yPosDelta);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="yPosDelta"></param>
+        private void CreateDigitalTwinMessageProperty(DigitalTwinProperty property, float yPosDelta)
+        {
+            if (this.messagePropGuidTemplate != null)
+            {
+                GameObject go = Instantiate(this.messagePropGuidTemplate, this.contentObject.transform);
+
+                this.AddDigitalTwinGuiProperty(property, go, yPosDelta);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="yPosDelta"></param>
+        private void CreateDigitalTwinScheduleProperty(DigitalTwinProperty property, float yPosDelta)
+        {
+            if (this.schedulePropGuidTemplate != null)
+            {
+                GameObject go = Instantiate(this.schedulePropGuidTemplate, this.contentObject.transform);
+
+                this.AddDigitalTwinGuiProperty(property, go, yPosDelta);
+            }
         }
 
     }
+
 }
