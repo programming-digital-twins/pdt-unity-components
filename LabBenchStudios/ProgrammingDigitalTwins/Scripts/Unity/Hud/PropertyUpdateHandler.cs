@@ -57,11 +57,11 @@ namespace LabBenchStudios.Pdt.Unity.Controller
         [SerializeField]
         private GameObject targetValueObject = null;
 
-        private TMP_Text propertyLabel = null;
-        private TMP_Text propertyMessage = null;
+        private TMP_Text propertyLabelText = null;
         private TMP_Text targetValueText = null;
 
-        private Text propertyValue = null;
+        private Text propertyMessageText = null;
+        private Text propertyValueText = null;
         private Toggle propertyToggle = null;
 
         private float prevValue = float.MinValue;
@@ -88,12 +88,12 @@ namespace LabBenchStudios.Pdt.Unity.Controller
         {
             if (this.propertyLabelObject != null)
             {
-                this.propertyLabel = this.propertyLabelObject.GetComponent<TextMeshProUGUI>();
+                this.propertyLabelText = this.propertyLabelObject.GetComponent<TextMeshProUGUI>();
             }
 
             if (this.propertyMessageObject != null)
             {
-                this.propertyMessage = this.propertyMessageObject.GetComponent<TextMeshProUGUI>();
+                this.propertyMessageText = this.propertyMessageObject.GetComponent<Text>();
             }
 
             if (this.propertyToggleObject != null)
@@ -103,7 +103,7 @@ namespace LabBenchStudios.Pdt.Unity.Controller
 
             if (this.propertyValueObject != null)
             {
-                this.propertyValue = this.propertyValueObject.GetComponent<Text>();
+                this.propertyValueText = this.propertyValueObject.GetComponent<Text>();
             }
 
             if (this.targetValueObject != null)
@@ -187,7 +187,10 @@ namespace LabBenchStudios.Pdt.Unity.Controller
             {
                 ActuatorData data = new ActuatorData();
 
+                // apply device and type-specific properties
                 data.UpdateData(this.dataContext);
+
+                // apply command-specific properties
                 data.SetCommand(this.command);
                 data.SetValue(this.curValue);
                 data.SetStateData(this.msgState);
@@ -257,6 +260,8 @@ namespace LabBenchStudios.Pdt.Unity.Controller
 
                 this.dataContext =
                     new IotDataContext(this.name, this.deviceID, this.typeCategoryID, this.typeID);
+
+                this.dataContext.SetLocationID(this.locationID);
             }
 
             this.UpdateLocalProperties();
@@ -280,9 +285,9 @@ namespace LabBenchStudios.Pdt.Unity.Controller
         /// </summary>
         private void UpdateLocalProperties()
         {
-            if (this.propertyMessage != null)
+            if (this.propertyMessageText != null)
             {
-                this.msgState = this.propertyMessage.text;
+                this.msgState = this.propertyMessageText.text;
 
                 if (! string.IsNullOrEmpty(this.msgState))
                 {
@@ -304,15 +309,15 @@ namespace LabBenchStudios.Pdt.Unity.Controller
                 }
             }
 
-            if (this.propertyValue != null && ! string.IsNullOrEmpty(this.propertyValue.text))
+            if (this.propertyValueText != null && ! string.IsNullOrEmpty(this.propertyValueText.text))
             {
-                string valueStr = this.propertyValue.text.Trim();
+                string valueStr = this.propertyValueText.text.Trim();
 
                 try
                 {
                     this.curValue = float.Parse(valueStr);
 
-                    Debug.Log($"Updated current value: {this.propertyValue.text} -> {this.curValue}");
+                    Debug.Log($"Updated current value: {this.propertyValueText.text} -> {this.curValue}");
 
                     this.isChanged = (this.curValue != this.prevValue);
 
