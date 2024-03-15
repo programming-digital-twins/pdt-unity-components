@@ -153,7 +153,7 @@ namespace LabBenchStudios.Pdt.Unity.Hud
             // first: set the command resource name text
             //        this is automatically set initially, but the user can
             //        manually override (eventually - future update), so check
-            //        the current value and apply it to the locally stored
+            //        the current curValue and apply it to the locally stored
             //        cmdResourceName string
             if (this.deviceCmdResourceText != null)
             {
@@ -473,11 +473,14 @@ namespace LabBenchStudios.Pdt.Unity.Hud
                 // TODO: implement this - the following is just a template
                 foreach (IPropertyManagementController propsUpdateHandler in this.propertyUpdateHandlerList)
                 {
-                    ResourceNameContainer deviceCmdResource = new ResourceNameContainer(this.cmdResource);
-                    deviceCmdResource.DataContext = propsUpdateHandler.GenerateCommand();
+                    if (propsUpdateHandler.IsChanged())
+                    {
+                        ResourceNameContainer deviceCmdResource = new ResourceNameContainer(this.cmdResource);
+                        deviceCmdResource.DataContext = propsUpdateHandler.GenerateCommand();
 
-                    Debug.LogWarning($"Resource: {deviceCmdResource}; Data: {deviceCmdResource.DataContext}");
-                    deviceCmdResourceList.Add(deviceCmdResource);
+                        Debug.LogWarning($"Resource: {deviceCmdResource}; Data: {deviceCmdResource.DataContext}");
+                        deviceCmdResourceList.Add(deviceCmdResource);
+                    }
                 }
 
                 return deviceCmdResourceList;
@@ -657,9 +660,18 @@ namespace LabBenchStudios.Pdt.Unity.Hud
                 }
 
                 // adjust location
-                RectTransform rt = go.GetComponent<RectTransform>();
-                Vector2 anchorPos = new Vector2((rt.anchoredPosition.x - 200), (rt.anchoredPosition.y - yPosDelta));
-                rt.anchoredPosition = anchorPos;
+
+                RectTransform propPosObj = go.GetComponent<RectTransform>();
+                float xPos = propPosObj.anchoredPosition.x - 50.0f;
+
+                if (this.contentObject != null)
+                {
+                    RectTransform parentPosObj = this.contentObject.GetComponent<RectTransform>();
+                    xPos = parentPosObj.anchoredPosition.x - 5.0f;
+                }
+
+                Vector2 anchorPos = new Vector2(xPos, (propPosObj.anchoredPosition.y - yPosDelta));
+                propPosObj.anchoredPosition = anchorPos;
 
                 // activate component
                 go.SetActive(true);

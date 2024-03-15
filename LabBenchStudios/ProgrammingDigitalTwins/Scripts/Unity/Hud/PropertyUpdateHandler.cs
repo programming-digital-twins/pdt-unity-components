@@ -54,13 +54,20 @@ namespace LabBenchStudios.Pdt.Unity.Controller
         [SerializeField]
         private GameObject propertyMessageObject = null;
 
+        [SerializeField]
+        private GameObject targetValueObject = null;
+
         private TMP_Text propertyLabel = null;
         private TMP_Text propertyMessage = null;
+        private TMP_Text targetValueText = null;
+
         private Text propertyValue = null;
         private Toggle propertyToggle = null;
 
-        private float value = 0.0f;
+        private float prevValue = float.MinValue;
+        private float curValue = float.MinValue;
         private int command = 0;
+        private bool isChanged = false;
         private bool isSelected = false;
         private string msgState = ConfigConst.NOT_SET;
 
@@ -99,6 +106,11 @@ namespace LabBenchStudios.Pdt.Unity.Controller
                 this.propertyValue = this.propertyValueObject.GetComponent<Text>();
             }
 
+            if (this.targetValueObject != null)
+            {
+                this.targetValueText = this.targetValueObject.GetComponent<TextMeshProUGUI>();
+            }    
+
             this.UpdateLocalProperties();
         }
 
@@ -118,6 +130,17 @@ namespace LabBenchStudios.Pdt.Unity.Controller
         public string GetMessage()
         {
             return this.msgState;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public bool IsChanged()
+        {
+            this.UpdateLocalProperties();
+
+            return this.isChanged;
         }
 
         /// <summary>
@@ -149,31 +172,38 @@ namespace LabBenchStudios.Pdt.Unity.Controller
         /// <returns></returns>
         public float GetValue()
         {
-            return this.value;
+            return this.curValue;
         }
 
         /// <summary>
-        /// 
+        /// This call will reset the internal state once the ActuatorData
+        /// is generated. If there's no change detected between the previously
+        /// stored value and the current one, it will return null.
         /// </summary>
         /// <returns></returns>
         public ActuatorData GenerateCommand()
         {
-            this.UpdateLocalProperties();
+            if (this.IsChanged())
+            {
+                ActuatorData data = new ActuatorData();
 
-            /*
-            ActuatorData data =
-                new ActuatorData(this.name, this.deviceID, this.typeCategoryID, this.typeID);
-            */
+                data.UpdateData(this.dataContext);
+                data.SetCommand(this.command);
+                data.SetValue(this.curValue);
+                data.SetStateData(this.msgState);
 
-            ActuatorData data = new ActuatorData();
+                Debug.Log($"Generated Outgoing Command: {data}");
 
-            data.UpdateData(this.dataContext);
-            data.SetCommand(this.command);
-            data.SetValue(this.value);
+                this.prevValue = this.curValue;
 
-            Debug.Log($"Generated Outgoing Command: {data}");
+                return data;
+            }
+            else
+            {
+                Debug.Log($"State not changed. No command needed: {this.name}");
+            }
 
-            return data;
+            return null;
         }
 
         /// <summary>
@@ -233,7 +263,6 @@ namespace LabBenchStudios.Pdt.Unity.Controller
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="data"></param>
         public void ValidateCommandResponse(ActuatorData data)
@@ -251,16 +280,14 @@ namespace LabBenchStudios.Pdt.Unity.Controller
         /// </summary>
         private void UpdateLocalProperties()
         {
-            /*
-            if (this.propertyLabel != null)
-            {
-                this.name = this.propertyLabel.text;
-            }
-            */
-
             if (this.propertyMessage != null)
             {
                 this.msgState = this.propertyMessage.text;
+
+                if (! string.IsNullOrEmpty(this.msgState))
+                {
+                    this.msgState = ConfigConst.NOT_SET;
+                }
             }
 
             if (this.propertyToggle != null)
@@ -283,15 +310,23 @@ namespace LabBenchStudios.Pdt.Unity.Controller
 
                 try
                 {
-                    if (float.TryParse(valueStr, out float f)) { this.value = f; }
-                    if (double.TryParse(valueStr, out double d)) { this.value = (float) d; }
-                    if (int.TryParse(valueStr, out int i)) { this.value = (float) i; }
+                    this.curValue = float.Parse(valueStr);
 
-                    Debug.Log($"Attempted to parse {this.propertyValue.text} into {this.value}");
+                    Debug.Log($"Updated current value: {this.propertyValue.text} -> {this.curValue}");
+
+                    this.isChanged = (this.curValue != this.prevValue);
+
+                    if (this.targetValueText != null)
+                    {
+                        this.targetValueText.text = this.curValue.ToString();
+                    }
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"Can't parse value entry - not a float: --{valueStr}--\n{e}");
+                    // it's likely this will be caught often - no need to log a message
+                    //Debug.LogError($"Can't parse curValue entry - not a float: --{valueStr}--");
+
+                    this.isChanged = false;
                 }
             }
         }
