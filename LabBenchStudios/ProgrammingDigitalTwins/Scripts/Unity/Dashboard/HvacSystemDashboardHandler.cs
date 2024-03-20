@@ -64,7 +64,18 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         private IDigitalTwinStateProcessor humidifierStateProcessor = null;
         private IDigitalTwinStateProcessor barometerStateProcessor  = null;
 
+        private ThresholdCrossingContainer thresholdCrossingContainer = null;
+
         // public methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public ThresholdCrossingContainer GetThresholdCrossingContainer()
+        {
+            return this.thresholdCrossingContainer;
+        }
 
         /// <summary>
         /// 
@@ -143,6 +154,8 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
 
         protected override void InitMessageHandler()
         {
+            this.thresholdCrossingContainer = new ThresholdCrossingContainer();
+
             try
             {
                 this.envCurTemperatureLog = this.envCurTemperatureDisplay?.GetComponent<TextMeshProUGUI>();
@@ -223,6 +236,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
                 // have to rely on a follow up command from a remote
                 // system (hosted within the DTA)
                 data.SetName(ConfigConst.ACTUATOR_CMD);
+                data.SetDeviceID(dtStateProcessor.GetDeviceID());
                 data.SetTypeCategoryID(ConfigConst.ENV_TYPE_CATEGORY);
                 data.SetTypeID(ConfigConst.HVAC_ACTUATOR_TYPE);
                 data.SetCommand(ConfigConst.COMMAND_ON);

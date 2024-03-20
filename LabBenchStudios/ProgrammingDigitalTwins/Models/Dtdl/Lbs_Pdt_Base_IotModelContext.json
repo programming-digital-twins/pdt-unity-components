@@ -58,20 +58,6 @@
           }
         ]
       }
-    },
-    {
-      "@type": "Command",
-      "name": "update",
-      "request": {
-        "name": "updateTime",
-        "displayName": "Update Time",
-        "description": "Requested Time to Execute Update.",
-        "schema": "dateTime"
-      },
-      "response": {
-        "name": "commandProcessed",
-        "schema": "boolean"
-      }
     }
   ]
 }

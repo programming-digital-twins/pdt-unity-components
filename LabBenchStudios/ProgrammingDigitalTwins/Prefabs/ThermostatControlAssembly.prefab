@@ -628,7 +628,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9fd50f4202c6ea4a8a41789533b4338, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  registerForDataCallbacks: 1
+  registerForDataCallbacks: 0
   enableDebugLogProcessing: 0
   enableWarningLogProcessing: 1
   enableErrorLogProcessing: 1
