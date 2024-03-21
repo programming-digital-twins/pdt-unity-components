@@ -28,12 +28,16 @@ using UnityEngine;
 
 using TMPro;
 
+using LabBenchStudios.Pdt.Common;
 using LabBenchStudios.Pdt.Data;
+using LabBenchStudios.Pdt.Model;
+
 using LabBenchStudios.Pdt.Unity.Common;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace LabBenchStudios.Pdt.Unity.Dashboard
 {
-    public class PowerSystemDashboardHandler : BaseAsyncDataMessageProcessor
+    public class PowerSystemDashboardHandler : BaseAsyncDataMessageProcessor, IDataContextExtendedListener
     {
         [SerializeField]
         private GameObject operationalStateDisplay = null;
@@ -50,24 +54,59 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
         [SerializeField]
         private GameObject generatorDutyCycleInHoursDisplay = null;
 
+        [SerializeField]
+        private GameObject windSpeedDisplay = null;
+
+        [SerializeField]
+        private GameObject windTurbineRpmDisplay = null;
+
         private TMP_Text operationalStateLog = null;
         private TMP_Text voltageOutputLog = null;
         private TMP_Text wattageOutputLog = null;
         private TMP_Text generatorTempLog = null;
         private TMP_Text dutyCycleLog = null;
+        private TMP_Text windSpeedLog = null;
+        private TMP_Text windTurbineRpmLog = null;
+
+        private IDigitalTwinStateProcessor windTurbineStateProcesor = null;
+
+        private ThresholdCrossingContainer thresholdCrossingContainer = null;
+
+        private float curOutputPower = 0.0f;
+        private float curWindSpeed = 0.0f;
+        private float curWindTurbineRpm = 0.0f;
+
+        // public methods
+
+        public ThresholdCrossingContainer GetThresholdCrossingContainer()
+        {
+            return this.thresholdCrossingContainer;
+        }
+
+        public void SetDigitalTwinStateProcessor(IDigitalTwinStateProcessor dtStateProcessor)
+        {
+            if (dtStateProcessor != null)
+            {
+                this.windTurbineStateProcesor = dtStateProcessor;
+            }
+        }
 
 
         // protected
 
         protected override void InitMessageHandler()
         {
+            this.thresholdCrossingContainer = new ThresholdCrossingContainer();
+
             try
             {
-                this.operationalStateLog = this.operationalStateDisplay.GetComponent<TextMeshProUGUI>();
-                this.voltageOutputLog = this.voltageOutputDisplay.GetComponent<TextMeshProUGUI>();
-                this.wattageOutputLog = this.wattageOutputDisplay.GetComponent<TextMeshProUGUI>();
-                this.generatorTempLog = this.generatorTempDisplay.GetComponent<TextMeshProUGUI>();
-                this.dutyCycleLog = this.generatorDutyCycleInHoursDisplay.GetComponent<TextMeshProUGUI>();
+                this.operationalStateLog = this.operationalStateDisplay?.GetComponent<TextMeshProUGUI>();
+                this.voltageOutputLog = this.voltageOutputDisplay?.GetComponent<TextMeshProUGUI>();
+                this.wattageOutputLog = this.wattageOutputDisplay?.GetComponent<TextMeshProUGUI>();
+                this.generatorTempLog = this.generatorTempDisplay?.GetComponent<TextMeshProUGUI>();
+                this.dutyCycleLog = this.generatorDutyCycleInHoursDisplay?.GetComponent<TextMeshProUGUI>();
+                this.windSpeedLog = this.windSpeedDisplay?.GetComponent<TextMeshProUGUI>();
+                this.windTurbineRpmLog = this.windTurbineRpmDisplay?.GetComponent<TextMeshProUGUI>();
             }
             catch (Exception ex)
             {
@@ -96,25 +135,28 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             {
                 int typeID = data.GetDeviceType();
 
-                /*
-                if (typeID == ConfigConst.TEMP_SENSOR_TYPE && this.envCurTemperatureLog != null)
+                Debug.Log($"Processing incoming power system SensorData: {data.GetDeviceID()} - {typeID}");
+
+                switch (typeID)
                 {
-                    double cookedVal = Math.Round(data.GetValue(), 1);
-                    this.envCurTemperatureLog.text = cookedVal.ToString();
+                    case ConfigConst.WIND_TURBINE_POWER_OUTPUT_SENSOR_TYPE:
+                        this.curOutputPower = (float) Math.Round(data.GetValue(), 1);
+                        break;
+
+                    case ConfigConst.WIND_TURBINE_AIR_SPEED_SENSOR_TYPE:
+                        this.curWindSpeed = (float) Math.Round(data.GetValue(), 1);
+                        break;
+
+                    case ConfigConst.WIND_TURBINE_ROTATIONAL_SPEED_SENSOR_TYPE:
+                        this.curWindTurbineRpm = (float) Math.Round(data.GetValue(), 1);
+                        break;
+
                 }
 
-                if (typeID == ConfigConst.HUMIDITY_SENSOR_TYPE && this.envCurHumidityLog != null)
-                {
-                    double cookedVal = Math.Round(data.GetValue(), 1);
-                    this.envCurHumidityLog.text = cookedVal.ToString();
-                }
-
-                if (typeID == ConfigConst.PRESSURE_SENSOR_TYPE && this.envCurPressureLog != null)
-                {
-                    double cookedVal = Math.Round(data.GetValue(), 1);
-                    this.envCurPressureLog.text = cookedVal.ToString();
-                }
-                */
+                if (this.voltageOutputLog != null) this.voltageOutputLog.text = "120.0";
+                if (this.wattageOutputLog != null) this.wattageOutputLog.text = this.curOutputPower.ToString();
+                if (this.windSpeedLog != null) this.windSpeedLog.text = this.curWindSpeed.ToString();
+                if (this.windTurbineRpmLog != null) this.windTurbineRpmLog.text = this.curWindTurbineRpm.ToString();
             }
         }
 

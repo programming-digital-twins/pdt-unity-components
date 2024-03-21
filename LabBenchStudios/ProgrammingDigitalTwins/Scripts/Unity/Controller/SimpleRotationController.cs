@@ -28,6 +28,7 @@ using UnityEngine;
 
 using LabBenchStudios.Pdt.Data;
 using LabBenchStudios.Pdt.Unity.Common;
+using LabBenchStudios.Pdt.Common;
 
 /**
  * Controller for managing rotational speed.
@@ -35,16 +36,15 @@ using LabBenchStudios.Pdt.Unity.Common;
  */
 namespace LabBenchStudios.Pdt.Unity.Controller
 {
-    public class SimpleRotationController : BaseAsyncDataMessageProcessor
+    public class SimpleRotationController : MonoBehaviour, IDataContextEventListener
     {
-        public const float PI = 3.14159f;
         public const int SECS_PER_MIN = 60;
 
         [SerializeField]
         public GameObject rotationHub;
 
         [SerializeField, Range(0.0f, 100000.0f)]
-        private float rotationsPerMinute = 5000.0f;
+        private float rotationsPerMinute = 0.0f;
 
         public enum RotationDirection
         {
@@ -90,20 +90,19 @@ namespace LabBenchStudios.Pdt.Unity.Controller
         private Transform rotationHubTransform = null;
         private Vector3 rotationalVector = Vector3.zero;
 
-        void Start()
+
+        // internal methods
+
+        void Awake()
         {
             if (this.rotationHub == null)
             {
                 this.rotationHub = gameObject;
-                this.rotationHubTransform = rotationHub.transform;
-            }
-            else
-            {
-                this.rotationHubTransform = this.rotationHub.transform;
             }
 
-            // set rotationsPerSecond initially
-            this.rotationsPerSecond = this.rotationsPerMinute / SECS_PER_MIN;
+            this.rotationHubTransform = this.rotationHub.transform;
+            this.rotationsPerSecond =
+                this.rotationsPerMinute > 0.0f ? this.rotationsPerMinute / SECS_PER_MIN : 0.0f;
         }
 
         void Update()
@@ -130,8 +129,7 @@ namespace LabBenchStudios.Pdt.Unity.Controller
                         // calculate rotationsPerSecond every update in case
                         // API call changes rotationsPerMinute dynamically
                         this.rotationsPerSecond = this.rotationsPerMinute / SECS_PER_MIN;
-                        this.rotationalVector.y = this.rotationsPerSecond * this.totalDegrees;
-                        this.rotationHubTransform.Rotate(this.rotationalVector * Time.deltaTime);
+                        this.rotationHubTransform.Rotate(0, (this.rotationsPerSecond * this.totalDegrees) * Time.deltaTime, 0);
                     }
                 }
                 else
@@ -152,33 +150,74 @@ namespace LabBenchStudios.Pdt.Unity.Controller
             }
         }
 
-        protected override void InitMessageHandler()
+
+        // public methods
+
+        public void EnableBrakingSystem(bool enable)
         {
+            this.isBrakeEngaged = enable;
         }
 
-        protected override void ProcessActuatorData(ActuatorData data)
+        public void SetRotationsPerMinute(float rpm)
         {
-            throw new NotImplementedException();
+            if (rpm >= 0.0f)
+            {
+                this.rotationsPerMinute = rpm;
+            }
         }
 
-        protected override void ProcessConnectionStateData(ConnectionStateData data)
+        public void HandleActuatorData(ActuatorData data)
         {
-            throw new NotImplementedException();
+            if (data != null)
+            {
+                switch (data.GetTypeID())
+                {
+                    case ConfigConst.WIND_TURBINE_BRAKE_SYSTEM_ACTUATOR_TYPE:
+                        this.EnableBrakingSystem((data.GetCommand() == ConfigConst.COMMAND_ON));
+                        break;
+                }
+            }
         }
 
-        protected override void ProcessMessageData(MessageData data)
+        public void HandleConnectionStateData(ConnectionStateData data)
         {
-            throw new NotImplementedException();
+            // ignore
         }
 
-        protected override void ProcessSensorData(SensorData data)
+        public void HandleMessageData(MessageData data)
         {
-            throw new NotImplementedException();
+            // ignore
         }
 
-        protected override void ProcessSystemPerformanceData(SystemPerformanceData data)
+        public void HandleSensorData(SensorData data)
         {
-            throw new NotImplementedException();
+            if (data != null)
+            {
+                int typeID = data.GetDeviceType();
+
+                Debug.Log($"Processing incoming rotation controller SensorData: {data.GetDeviceID()} - {typeID}");
+
+                switch (typeID)
+                {
+                    case ConfigConst.WIND_TURBINE_ROTATIONAL_SPEED_SENSOR_TYPE:
+                        //this.SetRotationsPerMinute((float)Math.Round(data.GetValue(), 1));
+                        this.SetRotationsPerMinute(data.GetValue());
+                        break;
+
+                    case ConfigConst.IMPELLER_RPM_SENSOR_TYPE:
+                        //this.SetRotationsPerMinute((float)Math.Round(data.GetValue(), 1));
+                        this.SetRotationsPerMinute(data.GetValue());
+                        break;
+                }
+            }
         }
+
+        public void HandleSystemPerformanceData(SystemPerformanceData data)
+        {
+            // ignore
+        }
+
+
     }
+
 }

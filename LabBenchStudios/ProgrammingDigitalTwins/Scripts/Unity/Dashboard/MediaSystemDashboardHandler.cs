@@ -53,7 +53,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             {
                 this.audioVolumeLog = this.AudioVolumeDisplay.GetComponent<TextMeshProUGUI>();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 Debug.LogError("Failed to initialize media data display text. Continuing without display data.");
             }

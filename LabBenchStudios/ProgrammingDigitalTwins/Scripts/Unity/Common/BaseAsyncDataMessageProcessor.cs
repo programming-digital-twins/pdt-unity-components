@@ -291,6 +291,44 @@ namespace LabBenchStudios.Pdt.Unity.Common
 
         // protected methods
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="primaryStateProcessor"></param>
+        /// <param name="otherStateProcessor"></param>
+        /// <param name="controllerID"></param>
+        /// <returns></returns>
+        protected IDigitalTwinStateProcessor CreateOrUpdateDigitalTwinStateProcessor(
+            IDigitalTwinStateProcessor primaryStateProcessor,
+            IDigitalTwinStateProcessor otherStateProcessor,
+            ModelNameUtil.DtmiControllerEnum controllerID)
+        {
+            DigitalTwinModelManager dtModelManager =
+                EventProcessor.GetInstance().GetDigitalTwinModelManager();
+
+            if (otherStateProcessor == null)
+            {
+                otherStateProcessor =
+                    dtModelManager.CreateModelState(
+                        primaryStateProcessor,
+                        false, // no GUID
+                        true,  // add to parent
+                        controllerID,
+                        (IDataContextEventListener)this);
+            }
+            else
+            {
+                otherStateProcessor.UpdateConnectionState(primaryStateProcessor);
+
+                if (otherStateProcessor is DigitalTwinModelState)
+                {
+                    dtModelManager.UpdateModelState((DigitalTwinModelState)otherStateProcessor);
+                }
+            }
+
+            return otherStateProcessor;
+        }
+
         protected void ProcessDebugLogMessage(string message)
         {
             if (message != null) Debug.Log(message);

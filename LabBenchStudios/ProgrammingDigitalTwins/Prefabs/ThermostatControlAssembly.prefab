@@ -2390,6 +2390,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4312941133171609952, guid: e21d5e17c4dffbc4d835d207346a0292,
         type: 3}
+      propertyPath: registerForDataCallbacks
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4312941133171609952, guid: e21d5e17c4dffbc4d835d207346a0292,
+        type: 3}
       propertyPath: enableConnectionStateDataProcessing
       value: 1
       objectReference: {fileID: 0}

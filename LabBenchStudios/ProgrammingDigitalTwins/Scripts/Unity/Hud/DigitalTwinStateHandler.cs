@@ -859,7 +859,16 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             // for now, this is moot - the model manager distributes updates to the
             // appropriate model state, which in turn notifies its listener (this)
             // of those updates
-            return this.enableIncomingTelemetry;
+            if (data != null)
+            {
+                return this.enableIncomingTelemetry;
+            }
+            else
+            {
+                Debug.LogError("Incoming telemetry object is NULL: " + data);
+                return false;
+            }
+
         }
 
         /// <summary>

@@ -47,9 +47,9 @@ namespace LabBenchStudios.Pdt.Unity.Controller
         private double sweptArea = 0.0;
         private double litersPerMinute = 0.0;
 
-        protected override void InitMessageHandler()
+        void Start()
         {
-            this.sweptArea = PI * Math.Pow(this.turbineDiameterInCentimeters / 2.0, 2.0);
+            this.sweptArea = Math.PI * Math.Pow(this.turbineDiameterInCentimeters / 2.0, 2.0);
         }
 
     }

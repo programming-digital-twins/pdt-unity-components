@@ -53,7 +53,7 @@ namespace LabBenchStudios.Pdt.Unity.Dashboard
             {
                 this.lightingStatusLog = this.CurrentLightingStatusDisplay.GetComponent<TextMeshProUGUI>();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 Debug.LogError("Failed to initialize lighting data display text. Continuing without display data.");
             }
