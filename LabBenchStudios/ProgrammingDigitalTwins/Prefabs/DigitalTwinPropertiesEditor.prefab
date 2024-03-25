@@ -724,7 +724,13 @@ MonoBehaviour:
   deviceCommandResourceObject: {fileID: 7514149000233735308}
   contentObject: {fileID: 5129593230451403400}
   closePanelButtonObject: {fileID: 6894208792995995055}
+  savePropsButtonObject: {fileID: 0}
   sendCommandButtonObject: {fileID: 6037004773820391039}
+  commandGuiTemplate: {fileID: 0}
+  valuePropsGuiTemplate: {fileID: 0}
+  togglePropGuiTemplate: {fileID: 0}
+  messagePropGuidTemplate: {fileID: 0}
+  schedulePropGuidTemplate: {fileID: 0}
   eventListenerContainer: {fileID: 0}
 --- !u!1 &3197180723731251964
 GameObject:
@@ -1801,7 +1807,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: How now brown cow.
+  m_text: No device status.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

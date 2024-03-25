@@ -227,6 +227,11 @@ PrefabInstance:
       propertyPath: connectionHostNameDisplay
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 6254080073444316526, guid: f9f66f975da9b994fa3c105368378e61,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6673864686685848218, guid: f9f66f975da9b994fa3c105368378e61,
         type: 3}
       propertyPath: rawMsgDataDisplay
