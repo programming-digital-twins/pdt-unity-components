@@ -114,8 +114,8 @@ namespace LabBenchStudios.Pdt.Unity.Hud
         private float verticalAnchorDelta = 400.0f;
         //private float verticalAnchorDelta = 0.25f;
 
-        private List<GameObject> digitalTwinGuiPropsList = null;
-        private List<IPropertyManagementController> propertyUpdateHandlerList = null;
+        private List<GameObject> digitalTwinGuiPropsList = new List<GameObject>();
+        private List<IPropertyManagementController> propertyUpdateHandlerList = new List<IPropertyManagementController>();
 
         private DigitalTwinModelState digitalTwinModelState = null;
 
@@ -353,10 +353,6 @@ namespace LabBenchStudios.Pdt.Unity.Hud
                 // second: update the command resource name
                 this.UpdateModelDataAndProperties();
 
-                // third: other init steps (if needed - future)
-                this.digitalTwinGuiPropsList = new List<GameObject>();
-                this.propertyUpdateHandlerList = new List<IPropertyManagementController>();
-
                 // finally: register for events
                 base.RegisterForSystemStatusEvents((ISystemStatusEventListener) this);
             }
@@ -478,7 +474,7 @@ namespace LabBenchStudios.Pdt.Unity.Hud
                         ResourceNameContainer deviceCmdResource = new ResourceNameContainer(this.cmdResource);
                         deviceCmdResource.DataContext = propsUpdateHandler.GenerateCommand();
 
-                        Debug.LogWarning($"Resource: {deviceCmdResource}; Data: {deviceCmdResource.DataContext}");
+                        Debug.Log($"Resource: {deviceCmdResource}; Data: {deviceCmdResource.DataContext}");
                         deviceCmdResourceList.Add(deviceCmdResource);
                     }
                 }
